@@ -6,7 +6,7 @@ class SDL_GetWindowGrabHook : public FunctionHook
 {
 public:
     SDL_GetWindowGrabHook() :
-        FunctionHook({ search_pattern<"FF ?? ?? ?? ?? ?? 3B ?? 74 ?? 48 ?? ?? ?? 8B ?? FF">() },
+        FunctionHook({ search_pattern<"FF ?? ?? ?? ?? ?? 3B ?? 74 ?? 8B ?? 48 ?? ?? ?? FF">() },
             { 0 }, std::source_location::current().function_name()) {};
 
     void EnableSpecifically(uintptr_t address_incl_offset) override;

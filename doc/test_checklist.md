@@ -26,3 +26,6 @@ Check these features before publishing:
 * Controller is unaffected
 * Both Vulkan and DX11 work
 * Both GOG and Steam work
+* Best practice: Manually search for ALL signatures and make sure they only find ONE location!
+The mod only throws errors when signatures could not be found at all, but it doesn't warn if a
+signature was found in multiple locations. The risk is very low, but not zero.

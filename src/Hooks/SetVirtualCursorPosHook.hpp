@@ -8,7 +8,7 @@ class SetVirtualCursorPosHook : public FunctionHook
 {
 public:
     SetVirtualCursorPosHook() :
-        FunctionHook({ search_pattern<"F3 0F 11 4D ?? FF ?? 08 01 00 00 ?? ?? ?? ?? 48">() }, { 5 },
+        FunctionHook({ search_pattern<"F3 0F 11 4D ?? 4C ?? ?? ?? 48 ?? ?? ?? FF">() }, { 13 },
             std::source_location::current().function_name()) {};
 
     void EnableSpecifically(uintptr_t address_incl_offset) override;
