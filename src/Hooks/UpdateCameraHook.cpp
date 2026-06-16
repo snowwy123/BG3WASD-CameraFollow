@@ -190,15 +190,55 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
             while (delta > 180.0f) delta -= 360.0f;
             while (delta < -180.0f) delta += 360.0f;
 
-            float step =
-                delta *
-                static_cast<float>(*settings->camera_follow_strength);
+float step = 0.0f;
 
-            float maxStep =
-                static_cast<float>(*settings->camera_follow_max_step);
+            float absDelta = std::abs(delta);
 
-            if (step > maxStep) step = maxStep;
-            if (step < -maxStep) step = -maxStep;
+            float followStrength = static_cast<float>(*settings->camera_follow_strength);
+
+            float followMaxStep = static_cast<float>(*settings->camera_follow_max_step);
+
+            const bool diagonalMoveHeld =
+                (wHeld && aHeld) || (wHeld && dHeld) || (sHeld && aHeld) || (sHeld && dHeld);
+
+            // Close-range snap protection.
+            //
+            // Important:
+            // - Do NOT soften diagonal movement, because W+A / W+D need camera rotation to work.
+            // - Do NOT soften larger turns, because that makes 90/180-degree camera movement feel slow.
+            // - Only soften small close-range camera corrections.
+            if (!diagonalMoveHeld && absDelta <= 55.0f)
+            {
+                float nearBlend = absDelta / 55.0f;
+
+                // Smooth curve: very soft when very close, less soft near 55 degrees.
+                nearBlend = nearBlend * nearBlend;
+
+                float nearStrength = 0.04f;
+
+                float blendedStrength =
+                    nearStrength + ((followStrength - nearStrength) * nearBlend);
+
+                step = delta * blendedStrength;
+
+                float nearMaxStep = 0.5f;
+
+                if (step > nearMaxStep)
+                    step = nearMaxStep;
+
+                if (step < -nearMaxStep)
+                    step = -nearMaxStep;
+            }
+            else
+            {
+                step = delta * followStrength;
+
+                if (step > followMaxStep)
+                    step = followMaxStep;
+
+                if (step < -followMaxStep)
+                    step = -followMaxStep;
+            }
 
             if (straightMoveHeld && !wasStraightMoveHeld)
             {
