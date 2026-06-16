@@ -52,7 +52,7 @@ void Settings::Load() noexcept
 	config.Bind(camera_follow_disable_in_combat, TRUE);
 
 	config.Bind(camera_follow_offset, -110.0);
-	config.Bind(camera_follow_left_turn_offset, -180.0);
+	config.Bind(camera_follow_left_turn_offset, -210.0);
 
 	config.Bind(camera_follow_offset_transition_strength, 0.12);
 	config.Bind(camera_follow_offset_transition_max_step, 4.0);
@@ -65,7 +65,7 @@ void Settings::Load() noexcept
 
 	config.Bind(camera_follow_straight_move_drift_ms, 200);
 
-	config.Bind(camera_follow_wa_multiplier, 0.20);
+	config.Bind(camera_follow_wa_multiplier, 0.30);
 	config.Bind(camera_follow_wd_multiplier, 0.75);
 	config.Bind(camera_follow_sa_multiplier, 0.50);
 	config.Bind(camera_follow_sd_multiplier, 0.50);
