@@ -42,6 +42,26 @@ void Settings::Load() noexcept
         config.Bind(rotate_threshold, 200);
 
         config.Bind(block_interact_move, FALSE);
+
+	config.Bind(block_interact_move, FALSE);
+
+	config.Bind(enable_camera_follow, TRUE);
+
+	config.Bind(camera_follow_offset, -110.0);
+	config.Bind(camera_follow_left_turn_offset, -180.0);
+
+	config.Bind(camera_follow_target_strength, 0.065);
+	config.Bind(camera_follow_target_max_step, 2.0);
+
+	config.Bind(camera_follow_strength, 0.13);
+	config.Bind(camera_follow_max_step, 5.0);
+
+	config.Bind(camera_follow_straight_move_drift_ms, 200);
+
+	config.Bind(camera_follow_wa_multiplier, 0.20);
+	config.Bind(camera_follow_wd_multiplier, 0.75);
+	config.Bind(camera_follow_sa_multiplier, 0.50);
+	config.Bind(camera_follow_sd_multiplier, 0.50);
     }
 
     config.Load();

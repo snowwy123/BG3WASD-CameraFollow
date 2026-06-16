@@ -13,14 +13,10 @@ public:
     String toggle_autoforward{ "ToggleAutoforward", "ModHotkeys" };
     String hold_walkspeed{ "HoldWalkspeed", "ModHotkeys" };
     String reload_config{ "ReloadConfig", "ModHotkeys" };
-    // TODO ToggleMouselook
-    // String toggle_mouselook{ "ToggleMouselook", "ModHotkeys" };
 
     Double walk_speed{ "WalkSpeed", "Core" };
     Boolean walking_is_default{ "WalkingIsDefault", "Core" };
     Boolean walk_after_combat{ "SwitchToWalkingAfterCombat", "Core" };
-    // TODO character_leftright_is_rotate
-    // Boolean character_leftright_is_rotate{ "CharacterLeftRightIsRotateInsteadOfMove", "Core" };
 
     Boolean enable_auto_toggling_movement_mode{ "EnableAutoTogglingMovementMode",
         "AutoToggleMovementMode" };
@@ -28,12 +24,27 @@ public:
     Boolean enable_improved_mouselook{ "EnableMouselook", "Mouselook" };
     Boolean enable_rotate_plus_lmb_is_forward{ "EnableRotatePlusLeftclickMovesForward",
         "Mouselook" };
-    // TODO ToggleMouselook
-    // Boolean toggle_movement_toggles_mouselook{ "ToggleMovementModeAlsoTogglesMouselook",
-    //     "Mouselook" };
     Integer rotate_threshold{ "RotateThreshold", "Mouselook" };
 
     Boolean block_interact_move{ "BlockInteractMove", "InteractMoveBlocker" };
+
+    Boolean enable_camera_follow{ "EnableCameraFollow", "CameraFollow" };
+
+    Double camera_follow_offset{ "CameraOffset", "CameraFollow" };
+    Double camera_follow_left_turn_offset{ "LeftTurnOffset", "CameraFollow" };
+
+    Double camera_follow_target_strength{ "TargetFollowStrength", "CameraFollow" };
+    Double camera_follow_target_max_step{ "TargetFollowMaxStep", "CameraFollow" };
+
+    Double camera_follow_strength{ "CameraFollowStrength", "CameraFollow" };
+    Double camera_follow_max_step{ "CameraFollowMaxStep", "CameraFollow" };
+
+    Integer camera_follow_straight_move_drift_ms{ "StraightMoveDriftMs", "CameraFollow" };
+
+    Double camera_follow_wa_multiplier{ "WA_Multiplier", "CameraFollow" };
+    Double camera_follow_wd_multiplier{ "WD_Multiplier", "CameraFollow" };
+    Double camera_follow_sa_multiplier{ "SA_Multiplier", "CameraFollow" };
+    Double camera_follow_sd_multiplier{ "SD_Multiplier", "CameraFollow" };
 
     void Load() noexcept;
     std::vector<std::string> GetBoundKeycombos(std::string setting);
