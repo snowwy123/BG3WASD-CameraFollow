@@ -4,6 +4,29 @@ A mod for Baldur's Gate 3 that allows direct character movement with WASD keys (
 
 Find it on [Nexusmods](https://www.nexusmods.com/baldursgate3/mods/781).
 
+## Camera Follow Fork
+
+This fork is an experimental modification of BG3WASD that adds a character-follow camera system.
+
+Current additions include:
+
+- Character-follow camera during exploration
+- Adjustable shoulder offsets
+- Manual camera override (middle mouse / Q / E)
+- Combat camera disable
+- TOML configurable camera behaviour
+- Experimental movement and camera tuning options
+
+This project is based entirely on the original BG3WASD by Ch4nKyy.
+
+Original project:
+https://github.com/Ch4nKyy/BG3WASD
+
+Demo video:
+https://youtu.be/zSLyIckLE-w
+
+Status: Experimental / personal development fork.
+
 ## Building
 
 ### Requirements
