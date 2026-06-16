@@ -15,60 +15,48 @@ void Settings::Load() noexcept
         config.Bind(toggle_movement_mode, "key:capslock");
         config.Bind(hold_movement_mode, "");
         config.Bind(toggle_autoforward, "shift+key:w");
+        config.Bind(toggle_camera_follow, "key:f7");
         config.Bind(hold_walkspeed, "");
         config.Bind(reload_config, "key:f11");
-	config.Bind(toggle_camera_follow, "key:f7");
-        // TODO ToggleMouselook
-        // config.Bind(toggle_mouselook, "");
 
         config.Bind<0.0, 1.0>(walk_speed, 0.3);
         config.Bind(walking_is_default, FALSE);
         config.Bind(walk_after_combat, FALSE);
-        // TODO character_leftright_is_rotate
-        // config.Bind(character_leftright_is_rotate, FALSE);
-        // Future toml lines:
-        // CharacterLeftRightIsRotateInsteadOfMove = false
-        // # Set this to true if you want to MOVE the Camera with Left/Right, but ROTATE the
-        // # Character.
-        // # For this to work, you need to bind Camera Rotate Left/Right to the same keys as
-        // # Camera Left/Right.
 
         config.Bind(enable_auto_toggling_movement_mode, TRUE);
 
         config.Bind(enable_improved_mouselook, TRUE);
         config.Bind(enable_rotate_plus_lmb_is_forward, TRUE);
-        // TODO ToggleMouselook
-        // TODO ToggleMouselook
-        // config.Bind(toggle_movement_toggles_mouselook, FALSE);
         config.Bind(rotate_threshold, 200);
 
         config.Bind(block_interact_move, FALSE);
 
-	config.Bind(block_interact_move, FALSE);
+        config.Bind(enable_camera_follow, TRUE);
 
-	config.Bind(enable_camera_follow, TRUE);
+        config.Bind(camera_follow_suspend_on_manual_camera, TRUE);
+        config.Bind(camera_follow_disable_in_combat, TRUE);
 
-	config.Bind(camera_follow_suspend_on_manual_camera, TRUE);
-	config.Bind(camera_follow_disable_in_combat, TRUE);
+        config.Bind(camera_follow_offset, -110.0);
+        config.Bind(camera_follow_left_turn_offset, -210.0);
 
-	config.Bind(camera_follow_offset, -110.0);
-	config.Bind(camera_follow_left_turn_offset, -210.0);
+        config.Bind(camera_follow_offset_transition_strength, 0.02);
+        config.Bind(camera_follow_offset_transition_max_step, 1.0);
 
-	config.Bind(camera_follow_offset_transition_strength, 0.12);
-	config.Bind(camera_follow_offset_transition_max_step, 4.0);
+        config.Bind(camera_follow_offset_transition_out_strength, 0.015);
+        config.Bind(camera_follow_offset_transition_out_max_step, 0.6);
 
-	config.Bind(camera_follow_target_strength, 0.065);
-	config.Bind(camera_follow_target_max_step, 2.0);
+        config.Bind(camera_follow_target_strength, 0.065);
+        config.Bind(camera_follow_target_max_step, 2.0);
 
-	config.Bind(camera_follow_strength, 0.13);
-	config.Bind(camera_follow_max_step, 5.0);
+        config.Bind(camera_follow_strength, 0.13);
+        config.Bind(camera_follow_max_step, 3.5);
 
-	config.Bind(camera_follow_straight_move_drift_ms, 200);
+        config.Bind(camera_follow_straight_move_drift_ms, 200);
 
-	config.Bind(camera_follow_wa_multiplier, 0.30);
-	config.Bind(camera_follow_wd_multiplier, 0.75);
-	config.Bind(camera_follow_sa_multiplier, 0.50);
-	config.Bind(camera_follow_sd_multiplier, 0.50);
+        config.Bind(camera_follow_wa_multiplier, 0.30);
+        config.Bind(camera_follow_wd_multiplier, 0.75);
+        config.Bind(camera_follow_sa_multiplier, 0.50);
+        config.Bind(camera_follow_sd_multiplier, 0.50);
     }
 
     config.Load();
@@ -86,11 +74,12 @@ void Settings::Load() noexcept
     {
         InitState();
     }
-    else  // reloaded
+    else
     {
-        // during first load, this is called in AfterInitialLoadInputConfigHook
+        // During first load, this is called in AfterInitialLoadInputConfigHook.
         InputconfigPatcher::Patch();
     }
+
     state->EnableInteractMoveBlocker(state->IsCharacterMovementMode());
 
     first_time_loaded = false;

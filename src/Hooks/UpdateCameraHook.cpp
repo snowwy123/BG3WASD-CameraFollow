@@ -58,11 +58,25 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
         return OriginalFunc(a1, a2, a3, a4);
     }
 
+    int64_t originalResult = OriginalFunc(a1, a2, a3, a4);
+
     int64_t camera_object_ptr = *(int64_t*)(a4 + 48);
 
+    bool cameraFollowBlockedByCombat = false;
+
+    if (camera_object_ptr && *settings->camera_follow_disable_in_combat)
+    {
+        const bool cameraObjectCombat =
+            (*reinterpret_cast<bool*>(camera_object_ptr + 168) & 1) != 0;
+
+        cameraFollowBlockedByCombat =
+            cameraObjectCombat || state->old_combat_state;
+    }
+
     if (camera_object_ptr &&
-    *settings->enable_camera_follow &&
-    state->camera_follow_toggled)
+        *settings->enable_camera_follow &&
+        state->camera_follow_toggled &&
+        !cameraFollowBlockedByCombat)
     {
         float* cameraAngle = reinterpret_cast<float*>(camera_object_ptr + 0xAC);
 
@@ -82,6 +96,14 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
             const bool qHeld = (GetAsyncKeyState('Q') & 0x8000) != 0;
             const bool eHeld = (GetAsyncKeyState('E') & 0x8000) != 0;
             const bool middleMouseHeld = (GetAsyncKeyState(VK_MBUTTON) & 0x8000) != 0;
+
+            const bool forwardBackHeld = wHeld || sHeld;
+            const bool strafeHeld = aHeld || dHeld;
+            const bool straightMoveHeld = forwardBackHeld && !strafeHeld;
+            const bool movementInput = wHeld || aHeld || sHeld || dHeld;
+            const bool manualCameraInput = qHeld || eHeld || middleMouseHeld;
+
+            const uint32_t nowMoveTime = SDL_GetTicks();
 
             float desiredCameraOffset =
                 static_cast<float>(*settings->camera_follow_offset);
@@ -103,12 +125,23 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
             }
 
             float offsetDelta = desiredCameraOffset - smoothedCameraOffset;
-            float offsetMove =
-                offsetDelta *
-                static_cast<float>(*settings->camera_follow_offset_transition_strength);
+
+            const bool returningToDefaultOffset =
+                std::abs(
+                    desiredCameraOffset -
+                    static_cast<float>(*settings->camera_follow_offset)) < 0.01f;
+
+            float offsetStrength =
+                returningToDefaultOffset
+                    ? static_cast<float>(*settings->camera_follow_offset_transition_out_strength)
+                    : static_cast<float>(*settings->camera_follow_offset_transition_strength);
 
             float offsetMaxStep =
-                static_cast<float>(*settings->camera_follow_offset_transition_max_step);
+                returningToDefaultOffset
+                    ? static_cast<float>(*settings->camera_follow_offset_transition_out_max_step)
+                    : static_cast<float>(*settings->camera_follow_offset_transition_max_step);
+
+            float offsetMove = offsetDelta * offsetStrength;
 
             if (offsetMove > offsetMaxStep) offsetMove = offsetMaxStep;
             if (offsetMove < -offsetMaxStep) offsetMove = -offsetMaxStep;
@@ -167,14 +200,6 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
             if (step > maxStep) step = maxStep;
             if (step < -maxStep) step = -maxStep;
 
-            const bool forwardBackHeld = wHeld || sHeld;
-            const bool strafeHeld = aHeld || dHeld;
-            const bool straightMoveHeld = forwardBackHeld && !strafeHeld;
-            const bool movementInput = wHeld || aHeld || sHeld || dHeld;
-            const bool manualCameraInput = qHeld || eHeld || middleMouseHeld;
-
-            const uint32_t nowMoveTime = SDL_GetTicks();
-
             if (straightMoveHeld && !wasStraightMoveHeld)
             {
                 straightMoveStartTime = nowMoveTime;
@@ -185,19 +210,19 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
             // Let the player look around without the camera snapping back instantly.
             if (*settings->camera_follow_suspend_on_manual_camera)
             {
-            	if (manualCameraInput)
-            	{
-            	followSuspendedByManualCamera = true;
-            	}
+                if (manualCameraInput)
+                {
+                    followSuspendedByManualCamera = true;
+                }
 
-            	if (movementInput)
-            	{
-            	followSuspendedByManualCamera = false;
-            	}
+                if (movementInput)
+                {
+                    followSuspendedByManualCamera = false;
+                }
             }
             else
             {
-            	followSuspendedByManualCamera = false;
+                followSuspendedByManualCamera = false;
             }
 
             bool combatActive =
@@ -206,9 +231,9 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
             bool allowFollow = true;
 
             if (*settings->camera_follow_disable_in_combat &&
-            	combatActive)
+                combatActive)
             {
-            	allowFollow = false;
+                allowFollow = false;
             }
 
             if (followSuspendedByManualCamera)
@@ -277,5 +302,5 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
         state->last_time_combat_state_changed = SDL_GetTicks();
     }
 
-    return OriginalFunc(a1, a2, a3, a4);
+    return originalResult;
 }

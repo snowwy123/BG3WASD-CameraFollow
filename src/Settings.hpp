@@ -15,37 +15,58 @@ public:
     String hold_walkspeed{ "HoldWalkspeed", "ModHotkeys" };
     String reload_config{ "ReloadConfig", "ModHotkeys" };
 
-    Boolean camera_follow_suspend_on_manual_camera{
-	"SuspendFollowOnManualCamera",
-	"CameraFollow"
-    };
-
-    Boolean camera_follow_disable_in_combat{
-	"DisableFollowInCombat",
-	"CameraFollow"
-    };
-
     Double walk_speed{ "WalkSpeed", "Core" };
     Boolean walking_is_default{ "WalkingIsDefault", "Core" };
     Boolean walk_after_combat{ "SwitchToWalkingAfterCombat", "Core" };
 
-    Boolean enable_auto_toggling_movement_mode{ "EnableAutoTogglingMovementMode",
-        "AutoToggleMovementMode" };
+    Boolean enable_auto_toggling_movement_mode{
+        "EnableAutoTogglingMovementMode",
+        "AutoToggleMovementMode"
+    };
 
     Boolean enable_improved_mouselook{ "EnableMouselook", "Mouselook" };
-    Boolean enable_rotate_plus_lmb_is_forward{ "EnableRotatePlusLeftclickMovesForward",
-        "Mouselook" };
+    Boolean enable_rotate_plus_lmb_is_forward{
+        "EnableRotatePlusLeftclickMovesForward",
+        "Mouselook"
+    };
     Integer rotate_threshold{ "RotateThreshold", "Mouselook" };
 
     Boolean block_interact_move{ "BlockInteractMove", "InteractMoveBlocker" };
 
     Boolean enable_camera_follow{ "EnableCameraFollow", "CameraFollow" };
 
+    Boolean camera_follow_suspend_on_manual_camera{
+        "SuspendFollowOnManualCamera",
+        "CameraFollow"
+    };
+
+    Boolean camera_follow_disable_in_combat{
+        "DisableFollowInCombat",
+        "CameraFollow"
+    };
+
     Double camera_follow_offset{ "CameraOffset", "CameraFollow" };
     Double camera_follow_left_turn_offset{ "LeftTurnOffset", "CameraFollow" };
 
-    Double camera_follow_offset_transition_strength{ "OffsetTransitionStrength", "CameraFollow" };
-    Double camera_follow_offset_transition_max_step{ "OffsetTransitionMaxStep", "CameraFollow" };
+    Double camera_follow_offset_transition_strength{
+        "OffsetTransitionStrength",
+        "CameraFollow"
+    };
+
+    Double camera_follow_offset_transition_max_step{
+        "OffsetTransitionMaxStep",
+        "CameraFollow"
+    };
+
+    Double camera_follow_offset_transition_out_strength{
+        "OffsetTransitionOutStrength",
+        "CameraFollow"
+    };
+
+    Double camera_follow_offset_transition_out_max_step{
+        "OffsetTransitionOutMaxStep",
+        "CameraFollow"
+    };
 
     Double camera_follow_target_strength{ "TargetFollowStrength", "CameraFollow" };
     Double camera_follow_target_max_step{ "TargetFollowMaxStep", "CameraFollow" };
@@ -53,7 +74,10 @@ public:
     Double camera_follow_strength{ "CameraFollowStrength", "CameraFollow" };
     Double camera_follow_max_step{ "CameraFollowMaxStep", "CameraFollow" };
 
-    Integer camera_follow_straight_move_drift_ms{ "StraightMoveDriftMs", "CameraFollow" };
+    Integer camera_follow_straight_move_drift_ms{
+        "StraightMoveDriftMs",
+        "CameraFollow"
+    };
 
     Double camera_follow_wa_multiplier{ "WA_Multiplier", "CameraFollow" };
     Double camera_follow_wd_multiplier{ "WD_Multiplier", "CameraFollow" };
