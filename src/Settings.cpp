@@ -51,6 +51,8 @@ void Settings::Load() noexcept
         config.Bind(camera_follow_strength, 0.13);
         config.Bind(camera_follow_max_step, 3.5);
 
+        config.Bind(camera_follow_near_snap_max_step, 0.5);
+
         config.Bind(camera_follow_straight_move_drift_ms, 200);
 
         config.Bind(camera_follow_wa_multiplier, 0.30);

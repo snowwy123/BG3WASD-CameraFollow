@@ -221,7 +221,7 @@ float step = 0.0f;
 
                 step = delta * blendedStrength;
 
-                float nearMaxStep = 0.5f;
+                float nearMaxStep = static_cast<float>(*settings->camera_follow_near_snap_max_step);
 
                 if (step > nearMaxStep)
                     step = nearMaxStep;

@@ -74,6 +74,8 @@ public:
     Double camera_follow_strength{ "CameraFollowStrength", "CameraFollow" };
     Double camera_follow_max_step{ "CameraFollowMaxStep", "CameraFollow" };
 
+    Double camera_follow_near_snap_max_step{ "NearSnapMaxStep", "CameraFollow" };
+
     Integer camera_follow_straight_move_drift_ms{
         "StraightMoveDriftMs",
         "CameraFollow"
