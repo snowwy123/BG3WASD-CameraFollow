@@ -15,6 +15,16 @@ public:
     String hold_walkspeed{ "HoldWalkspeed", "ModHotkeys" };
     String reload_config{ "ReloadConfig", "ModHotkeys" };
 
+    Boolean camera_follow_suspend_on_manual_camera{
+	"SuspendFollowOnManualCamera",
+	"CameraFollow"
+    };
+
+    Boolean camera_follow_disable_in_combat{
+	"DisableFollowInCombat",
+	"CameraFollow"
+    };
+
     Double walk_speed{ "WalkSpeed", "Core" };
     Boolean walking_is_default{ "WalkingIsDefault", "Core" };
     Boolean walk_after_combat{ "SwitchToWalkingAfterCombat", "Core" };
@@ -33,6 +43,9 @@ public:
 
     Double camera_follow_offset{ "CameraOffset", "CameraFollow" };
     Double camera_follow_left_turn_offset{ "LeftTurnOffset", "CameraFollow" };
+
+    Double camera_follow_offset_transition_strength{ "OffsetTransitionStrength", "CameraFollow" };
+    Double camera_follow_offset_transition_max_step{ "OffsetTransitionMaxStep", "CameraFollow" };
 
     Double camera_follow_target_strength{ "TargetFollowStrength", "CameraFollow" };
     Double camera_follow_target_max_step{ "TargetFollowMaxStep", "CameraFollow" };

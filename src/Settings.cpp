@@ -48,8 +48,14 @@ void Settings::Load() noexcept
 
 	config.Bind(enable_camera_follow, TRUE);
 
+	config.Bind(camera_follow_suspend_on_manual_camera, TRUE);
+	config.Bind(camera_follow_disable_in_combat, TRUE);
+
 	config.Bind(camera_follow_offset, -110.0);
 	config.Bind(camera_follow_left_turn_offset, -180.0);
+
+	config.Bind(camera_follow_offset_transition_strength, 0.12);
+	config.Bind(camera_follow_offset_transition_max_step, 4.0);
 
 	config.Bind(camera_follow_target_strength, 0.065);
 	config.Bind(camera_follow_target_max_step, 2.0);

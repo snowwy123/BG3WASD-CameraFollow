@@ -103,10 +103,15 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
             }
 
             float offsetDelta = desiredCameraOffset - smoothedCameraOffset;
-            float offsetMove = offsetDelta * 0.12f;
+            float offsetMove =
+                offsetDelta *
+                static_cast<float>(*settings->camera_follow_offset_transition_strength);
 
-            if (offsetMove > 4.0f) offsetMove = 4.0f;
-            if (offsetMove < -4.0f) offsetMove = -4.0f;
+            float offsetMaxStep =
+                static_cast<float>(*settings->camera_follow_offset_transition_max_step);
+
+            if (offsetMove > offsetMaxStep) offsetMove = offsetMaxStep;
+            if (offsetMove < -offsetMaxStep) offsetMove = -offsetMaxStep;
 
             smoothedCameraOffset += offsetMove;
 
@@ -178,14 +183,21 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
             wasStraightMoveHeld = straightMoveHeld;
 
             // Let the player look around without the camera snapping back instantly.
-            if (manualCameraInput)
+            if (*settings->camera_follow_suspend_on_manual_camera)
             {
-                followSuspendedByManualCamera = true;
-            }
+            	if (manualCameraInput)
+            	{
+            	followSuspendedByManualCamera = true;
+            	}
 
-            if (movementInput)
+            	if (movementInput)
+            	{
+            	followSuspendedByManualCamera = false;
+            	}
+            }
+            else
             {
-                followSuspendedByManualCamera = false;
+            	followSuspendedByManualCamera = false;
             }
 
             bool combatActive =
@@ -193,9 +205,10 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
 
             bool allowFollow = true;
 
-            if (combatActive)
+            if (*settings->camera_follow_disable_in_combat &&
+            	combatActive)
             {
-                allowFollow = false;
+            	allowFollow = false;
             }
 
             if (followSuspendedByManualCamera)
