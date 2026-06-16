@@ -19,6 +19,19 @@ At the moment it includes:
 
 This project is based on the original BG3WASD by Ch4nKyy.
 
+## Script Extender yaw bridge
+
+This fork also uses a small companion `.pak` mod.
+
+The `.pak` runs a Script Extender Lua script that grabs the character's facing direction and passes it over to the modified BG3WASD DLL. The DLL then uses that information to handle the camera follow behaviour.
+
+At the moment both parts are needed:
+
+- The `.pak` gets the character yaw.
+- The DLL does the camera follow stuff.
+
+It's a little bit scuffed, but it works.
+
 Original project:
 https://github.com/Ch4nKyy/BG3WASD
 
