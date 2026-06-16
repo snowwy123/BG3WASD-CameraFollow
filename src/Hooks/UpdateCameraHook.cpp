@@ -60,7 +60,9 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
 
     int64_t camera_object_ptr = *(int64_t*)(a4 + 48);
 
-    if (camera_object_ptr && *settings->enable_camera_follow)
+    if (camera_object_ptr &&
+    *settings->enable_camera_follow &&
+    state->camera_follow_toggled)
     {
         float* cameraAngle = reinterpret_cast<float*>(camera_object_ptr + 0xAC);
 

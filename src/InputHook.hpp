@@ -28,6 +28,7 @@ private:
 
     static void AutoRun(State* state);
     static void ToggleMovementMode(State* state);
+    static void ToggleCameraFollow(State* state);
     static void WalkOrSprint(State* state);
     static void ReloadConfig();
     static void MouseLeftDown();

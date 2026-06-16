@@ -11,6 +11,7 @@ public:
     String toggle_movement_mode{ "ToggleMovementMode", "ModHotkeys" };
     String hold_movement_mode{ "HoldMovementMode", "ModHotkeys" };
     String toggle_autoforward{ "ToggleAutoforward", "ModHotkeys" };
+    String toggle_camera_follow{ "ToggleCameraFollow", "ModHotkeys" };
     String hold_walkspeed{ "HoldWalkspeed", "ModHotkeys" };
     String reload_config{ "ReloadConfig", "ModHotkeys" };
 
