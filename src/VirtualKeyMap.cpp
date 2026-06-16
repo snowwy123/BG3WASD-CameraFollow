@@ -119,22 +119,49 @@ void VirtualKeyMap::UpdateVkCombosOfCommandMap()
 {
     auto* settings = Settings::GetSingleton();
     auto* state = State::GetSingleton();
+
     vkcombos_of_command = {};
-    AddVkCombosForCommand(TOGGLE_WALKSPEED,
+
+    AddVkCombosForCommand(
+        TOGGLE_WALKSPEED,
         settings->GetBoundKeycombos(*settings->toggle_walkspeed));
-    AddVkCombosForCommand(HOLD_WALKSPEED, settings->GetBoundKeycombos(*settings->hold_walkspeed));
-    AddVkCombosForCommand(TOGGLE_AUTOFORWARD,
+
+    AddVkCombosForCommand(
+        HOLD_WALKSPEED,
+        settings->GetBoundKeycombos(*settings->hold_walkspeed));
+
+    AddVkCombosForCommand(
+        TOGGLE_AUTOFORWARD,
         settings->GetBoundKeycombos(*settings->toggle_autoforward));
-    AddVkCombosForCommand(TOGGLE_MOVEMENT_MODE,
+
+    AddVkCombosForCommand(
+        TOGGLE_MOVEMENT_MODE,
         settings->GetBoundKeycombos(*settings->toggle_movement_mode));
-    AddVkCombosForCommand(HOLD_MOVEMENT_MODE,
+
+    AddVkCombosForCommand(
+        HOLD_MOVEMENT_MODE,
         settings->GetBoundKeycombos(*settings->hold_movement_mode));
-    AddVkCombosForCommand(RELOAD_CONFIG, settings->GetBoundKeycombos(*settings->reload_config));
+
+    AddVkCombosForCommand(
+        RELOAD_CONFIG,
+        settings->GetBoundKeycombos(*settings->reload_config));
+
+    AddVkCombosForCommand(
+        TOGGLE_CAMERA_FOLLOW,
+        settings->GetBoundKeycombos(*settings->toggle_camera_follow));
+
     AddVkCombosForCommand(FORWARD, state->character_forward_keys);
+
     AddVkCombosForCommand(BACKWARD, state->character_backward_keys);
-    AddVkCombosForCommand(MOUSE_LEFT_DOWN, settings->GetBoundKeycombos(std::string("mouse:left")));
+
+    AddVkCombosForCommand(
+        MOUSE_LEFT_DOWN,
+        settings->GetBoundKeycombos(std::string("mouse:left")));
+
     // TODO ToggleMouselook
-    // AddVkCombosForCommand(TOGGLE_MOUSELOOK, settings->GetBoundKeycombos( *settings->toggle_mouselook ));
+    // AddVkCombosForCommand(
+    //     TOGGLE_MOUSELOOK,
+    //     settings->GetBoundKeycombos(*settings->toggle_mouselook));
 }
 
 bool VirtualKeyMap::VkIsValid(std::string keyname) { return GetVkByName(keyname) != 0; }

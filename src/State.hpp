@@ -10,6 +10,7 @@ public:
 
     // core
     bool autoforward_toggled = false;
+    bool camera_follow_toggled = true;
     bool walking_toggled = false;
     bool walking_held = false;
     int frames_to_hold_forward_to_center_camera = 0;

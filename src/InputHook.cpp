@@ -94,6 +94,7 @@ void InputHook::HandleInput()
     AutoRun(state);
     ToggleMovementMode(state);
     WalkOrSprint(state);
+    ToggleCameraFollow(state);
     ReloadConfig();
     MouseLeftDown();
     ToggleMouselook();
@@ -204,6 +205,20 @@ void InputHook::WalkOrSprint(State* state)
     if (DidCommandChange(HOLD_WALKSPEED, WM_KEYUP) && state->IsCharacterMovementMode())
     {
         state->walking_held = false;
+        return;
+    }
+}
+
+void InputHook::ToggleCameraFollow(State* state)
+{
+    if (DidCommandChange(TOGGLE_CAMERA_FOLLOW, WM_KEYDOWN))
+    {
+        state->camera_follow_toggled =
+            !state->camera_follow_toggled;
+
+        INFO("Camera Follow: {}",
+            state->camera_follow_toggled ? "ON" : "OFF");
+
         return;
     }
 }

@@ -17,6 +17,7 @@ void Settings::Load() noexcept
         config.Bind(toggle_autoforward, "shift+key:w");
         config.Bind(hold_walkspeed, "");
         config.Bind(reload_config, "key:f11");
+	config.Bind(toggle_camera_follow, "key:f7");
         // TODO ToggleMouselook
         // config.Bind(toggle_mouselook, "");
 
