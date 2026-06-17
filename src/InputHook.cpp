@@ -50,9 +50,15 @@ int InputHook::ConsumeMouseMoveX()
     return accumulated_mouse_dx.exchange(0);
 }
 
+int InputHook::ConsumeMouseMoveY()
+{
+    return accumulated_mouse_dy.exchange(0);
+}
+
 void InputHook::ResetMouseMoveTracking()
 {
     accumulated_mouse_dx.exchange(0);
+    accumulated_mouse_dy.exchange(0);
     reset_mouse_tracking_requested.store(true);
 }
 
@@ -70,25 +76,31 @@ LRESULT CALLBACK InputHook::MouseProc(int a_nCode, WPARAM a_wParam, LPARAM a_lPa
             if (a_nCode >= 0 && a_wParam == WM_MOUSEMOVE)
             {
                 LONG currentX = mouseStruct->pt.x;
+                LONG currentY = mouseStruct->pt.y;
 
                 if (reset_mouse_tracking_requested.exchange(false))
                 {
                     // SetCursorPos used by Mouse Steering Follow Mode causes a synthetic
                     // mouse move. Treat that as the new baseline, not user input.
                     accumulated_mouse_dx.exchange(0);
+                    accumulated_mouse_dy.exchange(0);
                     last_mouse_x = currentX;
-                    has_last_mouse_x = true;
+                    last_mouse_y = currentY;
+                    has_last_mouse_pos = true;
                 }
                 else
                 {
-                    if (has_last_mouse_x)
+                    if (has_last_mouse_pos)
                     {
                         accumulated_mouse_dx.fetch_add(
                             static_cast<int>(currentX - last_mouse_x));
+                        accumulated_mouse_dy.fetch_add(
+                            static_cast<int>(currentY - last_mouse_y));
                     }
 
                     last_mouse_x = currentX;
-                    has_last_mouse_x = true;
+                    last_mouse_y = currentY;
+                    has_last_mouse_pos = true;
                 }
             }
 
@@ -275,6 +287,7 @@ void InputHook::ToggleMouseSteeringFollow(State* state)
 
         // Flush any stale mouse movement so toggling the mode on never causes a jump.
         ConsumeMouseMoveX();
+        ConsumeMouseMoveY();
 
         return;
     }

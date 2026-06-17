@@ -137,6 +137,7 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
     if (IsInControllerModeHook::Get().Read())
     {
         InputHook::ConsumeMouseMoveX();
+        InputHook::ConsumeMouseMoveY();
         SetMouseSteeringCursorLock(state, false);
         return OriginalFunc(a1, a2, a3, a4);
     }
@@ -191,6 +192,10 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
         ? InputHook::ConsumeMouseMoveX()
         : (InputHook::ConsumeMouseMoveX(), 0);
 
+    const int mouseMoveY = shouldMouseSteerCamera
+        ? InputHook::ConsumeMouseMoveY()
+        : (InputHook::ConsumeMouseMoveY(), 0);
+
     if (*settings->mouse_steering_lock_cursor)
     {
         SetMouseSteeringCursorLock(state, shouldMouseSteerCamera);
@@ -206,6 +211,7 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
         !cameraFollowBlockedByCombat)
     {
         float* cameraAngle = reinterpret_cast<float*>(camera_object_ptr + 0xAC);
+        float* cameraPitch = reinterpret_cast<float*>(camera_object_ptr + 0x164);
 
         if (shouldMouseSteerCamera && mouseMoveX != 0)
         {
@@ -215,6 +221,30 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
 
             while (*cameraAngle > 180.0f) *cameraAngle -= 360.0f;
             while (*cameraAngle < -180.0f) *cameraAngle += 360.0f;
+        }
+
+        // Experimental pitch test. Native Camera Tweaks identifies CameraObject + 0x164
+        // as currentPitch, so this tries applying mouse Y there while Mouse Steering
+        // Follow owns the cursor. If this has no effect, pitch needs a proper
+        // CalculateCameraPitch-style hook instead of a direct field write.
+        if (shouldMouseSteerCamera &&
+            *settings->mouse_steering_enable_pitch &&
+            mouseMoveY != 0)
+        {
+            float pitch =
+                *cameraPitch +
+                static_cast<float>(mouseMoveY) *
+                static_cast<float>(*settings->mouse_steering_pitch_sensitivity);
+
+            const float pitchMin =
+                static_cast<float>(*settings->mouse_steering_pitch_min);
+            const float pitchMax =
+                static_cast<float>(*settings->mouse_steering_pitch_max);
+
+            if (pitch < pitchMin) pitch = pitchMin;
+            if (pitch > pitchMax) pitch = pitchMax;
+
+            *cameraPitch = pitch;
         }
 
         float yawRad = 0.0f;

@@ -12,6 +12,7 @@ class InputHook
 public:
     static void Enable(HMODULE a_hModule);
     static int ConsumeMouseMoveX();
+    static int ConsumeMouseMoveY();
     static void ResetMouseMoveTracking();
 
 private:
@@ -22,9 +23,11 @@ private:
     static inline bool is_ctrl_down;
     static inline bool is_alt_down;
     static inline std::atomic<int> accumulated_mouse_dx{ 0 };
+    static inline std::atomic<int> accumulated_mouse_dy{ 0 };
     static inline std::atomic<bool> reset_mouse_tracking_requested{ false };
     static inline LONG last_mouse_x = 0;
-    static inline bool has_last_mouse_x = false;
+    static inline LONG last_mouse_y = 0;
+    static inline bool has_last_mouse_pos = false;
 
     static LRESULT CALLBACK KeyboardProc(int a_nCode, WPARAM a_wParam, LPARAM a_lParam);
     static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam);

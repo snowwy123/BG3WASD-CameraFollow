@@ -39,6 +39,11 @@ public:
 
     Double mouse_steering_sensitivity{ "MouseSteeringSensitivity", "CameraFollow" };
 
+    Boolean mouse_steering_enable_pitch{ "MouseSteeringEnablePitch", "CameraFollow" };
+    Double mouse_steering_pitch_sensitivity{ "MouseSteeringPitchSensitivity", "CameraFollow" };
+    Double mouse_steering_pitch_min{ "MouseSteeringPitchMin", "CameraFollow" };
+    Double mouse_steering_pitch_max{ "MouseSteeringPitchMax", "CameraFollow" };
+
     Boolean mouse_steering_forward_only{ "MouseSteeringForwardOnly", "CameraFollow" };
 
     Boolean mouse_steering_lock_cursor{ "MouseSteeringLockCursor", "CameraFollow" };
