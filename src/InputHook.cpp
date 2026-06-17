@@ -2,7 +2,56 @@
 #include "ToggleRequest.hpp"
 #include "VirtualKeyMap.hpp"
 
+#include <cstdlib>
+#include <fstream>
+#include <string>
+
 using enum Command;
+
+
+static std::string GetBG3WASDNotificationPath()
+{
+    char* localAppData = nullptr;
+    size_t len = 0;
+
+    if (_dupenv_s(&localAppData, &len, "LOCALAPPDATA") != 0 || localAppData == nullptr)
+    {
+        return "";
+    }
+
+    std::string path = localAppData;
+    free(localAppData);
+
+    path += "\\Larian Studios\\Baldur's Gate 3\\Script Extender\\BG3WASD_Notification.txt";
+
+    return path;
+}
+
+static void WriteBG3WASDNotification(const std::string& message) noexcept
+{
+    try
+    {
+        const std::string path = GetBG3WASDNotificationPath();
+
+        if (path.empty())
+        {
+            return;
+        }
+
+        std::ofstream file(path, std::ios::trunc);
+
+        if (!file.is_open())
+        {
+            return;
+        }
+
+        file << GetTickCount64() << "\n" << message;
+    }
+    catch (...)
+    {
+        // Notifications are cosmetic only; never let them affect input handling.
+    }
+}
 
 void InputHook::Enable(HMODULE a_hModule)
 {
@@ -270,6 +319,10 @@ void InputHook::ToggleCameraFollow(State* state)
         INFO("Camera Follow: {}",
             state->camera_follow_toggled ? "ON" : "OFF");
 
+        WriteBG3WASDNotification(
+            std::string("Camera Follow: ") +
+            (state->camera_follow_toggled ? "ON" : "OFF"));
+
         return;
     }
 }
@@ -284,6 +337,10 @@ void InputHook::ToggleMouseSteeringFollow(State* state)
 
         INFO("Mouse Steering Follow Mode: {}",
             state->mouse_steering_follow_toggled ? "ON" : "OFF");
+
+        WriteBG3WASDNotification(
+            std::string("Mouse Steering Follow: ") +
+            (state->mouse_steering_follow_toggled ? "ON" : "OFF"));
 
         // Flush any stale mouse movement so toggling the mode on never causes a jump.
         ConsumeMouseMoveX();
