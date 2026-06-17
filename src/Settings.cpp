@@ -16,6 +16,7 @@ void Settings::Load() noexcept
         config.Bind(hold_movement_mode, "");
         config.Bind(toggle_autoforward, "shift+key:w");
         config.Bind(toggle_camera_follow, "key:f7");
+        config.Bind(toggle_mouse_steering_follow, "key:f6");
         config.Bind(hold_walkspeed, "");
         config.Bind(reload_config, "key:f11");
 
@@ -32,6 +33,11 @@ void Settings::Load() noexcept
         config.Bind(block_interact_move, FALSE);
 
         config.Bind(enable_camera_follow, TRUE);
+        config.Bind(enable_mouse_steering_follow, TRUE);
+
+        config.Bind(mouse_steering_sensitivity, 0.12);
+        config.Bind(mouse_steering_forward_only, TRUE);
+        config.Bind(mouse_steering_lock_cursor, TRUE);
 
         config.Bind(camera_follow_suspend_on_manual_camera, TRUE);
         config.Bind(camera_follow_disable_in_combat, TRUE);
@@ -93,6 +99,9 @@ void Settings::InitState()
     auto* state = State::GetSingleton();
 
     state->walking_toggled = walking_is_default;
+    // EnableMouseSteeringFollowMode is a master feature switch.
+    // The F6 mode itself should still start OFF until the player toggles it.
+    state->mouse_steering_follow_toggled = false;
 
     // Flag invalid to react later.
     state->cursor_position_to_restore.x = -1;

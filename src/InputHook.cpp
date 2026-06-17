@@ -45,6 +45,17 @@ void InputHook::StartHookAsOwnThread(HMODULE a_hModule)
     }
 }
 
+int InputHook::ConsumeMouseMoveX()
+{
+    return accumulated_mouse_dx.exchange(0);
+}
+
+void InputHook::ResetMouseMoveTracking()
+{
+    accumulated_mouse_dx.exchange(0);
+    reset_mouse_tracking_requested.store(true);
+}
+
 LRESULT CALLBACK InputHook::MouseProc(int a_nCode, WPARAM a_wParam, LPARAM a_lParam)
 {
     if (HWND hwnd = GetForegroundWindow())
@@ -53,7 +64,34 @@ LRESULT CALLBACK InputHook::MouseProc(int a_nCode, WPARAM a_wParam, LPARAM a_lPa
         GetWindowThreadProcessId(hwnd, &pid);
         if (pid == CURRENT_PROCESS_ID)
         {
-            DWORD mouseData = ((MSLLHOOKSTRUCT*)a_lParam)->mouseData;
+            auto* mouseStruct = reinterpret_cast<MSLLHOOKSTRUCT*>(a_lParam);
+            DWORD mouseData = mouseStruct->mouseData;
+
+            if (a_nCode >= 0 && a_wParam == WM_MOUSEMOVE)
+            {
+                LONG currentX = mouseStruct->pt.x;
+
+                if (reset_mouse_tracking_requested.exchange(false))
+                {
+                    // SetCursorPos used by Mouse Steering Follow Mode causes a synthetic
+                    // mouse move. Treat that as the new baseline, not user input.
+                    accumulated_mouse_dx.exchange(0);
+                    last_mouse_x = currentX;
+                    has_last_mouse_x = true;
+                }
+                else
+                {
+                    if (has_last_mouse_x)
+                    {
+                        accumulated_mouse_dx.fetch_add(
+                            static_cast<int>(currentX - last_mouse_x));
+                    }
+
+                    last_mouse_x = currentX;
+                    has_last_mouse_x = true;
+                }
+            }
+
             if (a_nCode >= 0 && SetLastInputVkByMouseInput(a_wParam, mouseData))
             {
                 HandleInput();
@@ -95,6 +133,7 @@ void InputHook::HandleInput()
     ToggleMovementMode(state);
     WalkOrSprint(state);
     ToggleCameraFollow(state);
+    ToggleMouseSteeringFollow(state);
     ReloadConfig();
     MouseLeftDown();
     ToggleMouselook();
@@ -222,6 +261,25 @@ void InputHook::ToggleCameraFollow(State* state)
         return;
     }
 }
+
+
+void InputHook::ToggleMouseSteeringFollow(State* state)
+{
+    if (DidCommandChange(TOGGLE_MOUSE_STEERING_FOLLOW, WM_KEYDOWN))
+    {
+        state->mouse_steering_follow_toggled =
+            !state->mouse_steering_follow_toggled;
+
+        INFO("Mouse Steering Follow Mode: {}",
+            state->mouse_steering_follow_toggled ? "ON" : "OFF");
+
+        // Flush any stale mouse movement so toggling the mode on never causes a jump.
+        ConsumeMouseMoveX();
+
+        return;
+    }
+}
+
 
 void InputHook::ReloadConfig()
 {

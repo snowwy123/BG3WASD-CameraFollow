@@ -1,5 +1,6 @@
 #include "UpdateCameraHook.hpp"
 #include "Hooks/IsInControllerModeHook.hpp"
+#include "InputHook.hpp"
 #include "Settings.hpp"
 #include "State.hpp"
 
@@ -47,6 +48,86 @@ static bool ReadYawBridge(float& yawRad, float& yawDeg, std::string& guid)
     }
 }
 
+
+static bool TryGetForegroundGameWindowCenter(POINT& center)
+{
+    HWND hwnd = GetForegroundWindow();
+    if (!hwnd)
+    {
+        return false;
+    }
+
+    DWORD pid = 0;
+    GetWindowThreadProcessId(hwnd, &pid);
+    if (pid != GetCurrentProcessId())
+    {
+        return false;
+    }
+
+    RECT clientRect{};
+    if (!GetClientRect(hwnd, &clientRect))
+    {
+        return false;
+    }
+
+    center.x = (clientRect.right - clientRect.left) / 2;
+    center.y = (clientRect.bottom - clientRect.top) / 2;
+
+    return ClientToScreen(hwnd, &center) != 0;
+}
+
+static void SetMouseSteeringCursorLock(State* state, bool active)
+{
+    static bool wasActive = false;
+    static POINT restorePoint{};
+    static bool restorePointValid = false;
+
+    if (active)
+    {
+        POINT center{};
+        if (!TryGetForegroundGameWindowCenter(center))
+        {
+            if (wasActive)
+            {
+                state->HideCursor(false);
+                InputHook::ResetMouseMoveTracking();
+                wasActive = false;
+                restorePointValid = false;
+            }
+            return;
+        }
+
+        if (!wasActive)
+        {
+            GetCursorPos(&restorePoint);
+            restorePointValid = true;
+            state->HideCursor(true);
+            wasActive = true;
+        }
+
+        // Prevent edge-of-screen mouse limits while steering.
+        // Reset the mouse delta tracker before SetCursorPos so the synthetic
+        // recenter movement is not counted as player mouse input.
+        InputHook::ResetMouseMoveTracking();
+        SetCursorPos(center.x, center.y);
+        return;
+    }
+
+    if (wasActive)
+    {
+        state->HideCursor(false);
+        InputHook::ResetMouseMoveTracking();
+
+        if (restorePointValid)
+        {
+            SetCursorPos(restorePoint.x, restorePoint.y);
+        }
+
+        restorePointValid = false;
+        wasActive = false;
+    }
+}
+
 // Called in GameThread, before HandleCameraInput.
 int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, int64_t a4)
 {
@@ -55,6 +136,8 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
 
     if (IsInControllerModeHook::Get().Read())
     {
+        InputHook::ConsumeMouseMoveX();
+        SetMouseSteeringCursorLock(state, false);
         return OriginalFunc(a1, a2, a3, a4);
     }
 
@@ -73,12 +156,66 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
             cameraObjectCombat || state->old_combat_state;
     }
 
+    const bool wHeld = (GetAsyncKeyState('W') & 0x8000) != 0;
+    const bool sHeld = (GetAsyncKeyState('S') & 0x8000) != 0;
+    const bool aHeld = (GetAsyncKeyState('A') & 0x8000) != 0;
+    const bool dHeld = (GetAsyncKeyState('D') & 0x8000) != 0;
+
+    const bool qHeld = (GetAsyncKeyState('Q') & 0x8000) != 0;
+    const bool eHeld = (GetAsyncKeyState('E') & 0x8000) != 0;
+    const bool middleMouseHeld = (GetAsyncKeyState(VK_MBUTTON) & 0x8000) != 0;
+
+    const bool forwardBackHeld = wHeld || sHeld;
+    const bool strafeHeld = aHeld || dHeld;
+    const bool straightMoveHeld = forwardBackHeld && !strafeHeld;
+    const bool movementInput = wHeld || aHeld || sHeld || dHeld;
+    const bool manualCameraInput = qHeld || eHeld || middleMouseHeld;
+
+    const bool mouseSteeringInput =
+        *settings->mouse_steering_forward_only
+            ? (wHeld || (wHeld && aHeld) || (wHeld && dHeld))
+            : movementInput;
+
+    const bool shouldMouseSteerCamera =
+        camera_object_ptr &&
+        *settings->enable_camera_follow &&
+        *settings->enable_mouse_steering_follow &&
+        state->camera_follow_toggled &&
+        state->mouse_steering_follow_toggled &&
+        state->IsCharacterMovementMode() &&
+        !cameraFollowBlockedByCombat &&
+        mouseSteeringInput &&
+        !middleMouseHeld;
+
+    const int mouseMoveX = shouldMouseSteerCamera
+        ? InputHook::ConsumeMouseMoveX()
+        : (InputHook::ConsumeMouseMoveX(), 0);
+
+    if (*settings->mouse_steering_lock_cursor)
+    {
+        SetMouseSteeringCursorLock(state, shouldMouseSteerCamera);
+    }
+    else
+    {
+        SetMouseSteeringCursorLock(state, false);
+    }
+
     if (camera_object_ptr &&
         *settings->enable_camera_follow &&
         state->camera_follow_toggled &&
         !cameraFollowBlockedByCombat)
     {
         float* cameraAngle = reinterpret_cast<float*>(camera_object_ptr + 0xAC);
+
+        if (shouldMouseSteerCamera && mouseMoveX != 0)
+        {
+            *cameraAngle +=
+                static_cast<float>(mouseMoveX) *
+                static_cast<float>(*settings->mouse_steering_sensitivity);
+
+            while (*cameraAngle > 180.0f) *cameraAngle -= 360.0f;
+            while (*cameraAngle < -180.0f) *cameraAngle += 360.0f;
+        }
 
         float yawRad = 0.0f;
         float yawDeg = 0.0f;
@@ -88,21 +225,6 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
 
         if (yawRead)
         {
-            const bool wHeld = (GetAsyncKeyState('W') & 0x8000) != 0;
-            const bool sHeld = (GetAsyncKeyState('S') & 0x8000) != 0;
-            const bool aHeld = (GetAsyncKeyState('A') & 0x8000) != 0;
-            const bool dHeld = (GetAsyncKeyState('D') & 0x8000) != 0;
-
-            const bool qHeld = (GetAsyncKeyState('Q') & 0x8000) != 0;
-            const bool eHeld = (GetAsyncKeyState('E') & 0x8000) != 0;
-            const bool middleMouseHeld = (GetAsyncKeyState(VK_MBUTTON) & 0x8000) != 0;
-
-            const bool forwardBackHeld = wHeld || sHeld;
-            const bool strafeHeld = aHeld || dHeld;
-            const bool straightMoveHeld = forwardBackHeld && !strafeHeld;
-            const bool movementInput = wHeld || aHeld || sHeld || dHeld;
-            const bool manualCameraInput = qHeld || eHeld || middleMouseHeld;
-
             const uint32_t nowMoveTime = SDL_GetTicks();
 
             float desiredCameraOffset =
@@ -190,7 +312,7 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
             while (delta > 180.0f) delta -= 360.0f;
             while (delta < -180.0f) delta += 360.0f;
 
-float step = 0.0f;
+            float step = 0.0f;
 
             float absDelta = std::abs(delta);
 
@@ -281,6 +403,7 @@ float step = 0.0f;
                 allowFollow = false;
             }
 
+
             // W-only/S-only can spiral because BG3WASD movement is camera-relative.
             if (straightMoveHeld)
             {
@@ -288,6 +411,13 @@ float step = 0.0f;
                     (nowMoveTime - straightMoveStartTime) <
                     static_cast<uint32_t>(
                         *settings->camera_follow_straight_move_drift_ms);
+            }
+
+            // Mouse Steering Follow Mode owns the camera yaw while active.
+            // This avoids fighting our yaw-bridge follow smoothing.
+            if (shouldMouseSteerCamera)
+            {
+                allowFollow = false;
             }
 
             if (wHeld && aHeld)

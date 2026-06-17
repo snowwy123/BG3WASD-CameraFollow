@@ -12,6 +12,7 @@ public:
     String hold_movement_mode{ "HoldMovementMode", "ModHotkeys" };
     String toggle_autoforward{ "ToggleAutoforward", "ModHotkeys" };
     String toggle_camera_follow{ "ToggleCameraFollow", "ModHotkeys" };
+    String toggle_mouse_steering_follow{ "ToggleMouseSteeringFollowMode", "ModHotkeys" };
     String hold_walkspeed{ "HoldWalkspeed", "ModHotkeys" };
     String reload_config{ "ReloadConfig", "ModHotkeys" };
 
@@ -34,6 +35,13 @@ public:
     Boolean block_interact_move{ "BlockInteractMove", "InteractMoveBlocker" };
 
     Boolean enable_camera_follow{ "EnableCameraFollow", "CameraFollow" };
+    Boolean enable_mouse_steering_follow{ "EnableMouseSteeringFollowMode", "CameraFollow" };
+
+    Double mouse_steering_sensitivity{ "MouseSteeringSensitivity", "CameraFollow" };
+
+    Boolean mouse_steering_forward_only{ "MouseSteeringForwardOnly", "CameraFollow" };
+
+    Boolean mouse_steering_lock_cursor{ "MouseSteeringLockCursor", "CameraFollow" };
 
     Boolean camera_follow_suspend_on_manual_camera{
         "SuspendFollowOnManualCamera",

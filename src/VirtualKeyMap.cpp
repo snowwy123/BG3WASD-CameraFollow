@@ -150,6 +150,10 @@ void VirtualKeyMap::UpdateVkCombosOfCommandMap()
         TOGGLE_CAMERA_FOLLOW,
         settings->GetBoundKeycombos(*settings->toggle_camera_follow));
 
+    AddVkCombosForCommand(
+        TOGGLE_MOUSE_STEERING_FOLLOW,
+        settings->GetBoundKeycombos(*settings->toggle_mouse_steering_follow));
+
     AddVkCombosForCommand(FORWARD, state->character_forward_keys);
 
     AddVkCombosForCommand(BACKWARD, state->character_backward_keys);
