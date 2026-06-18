@@ -103,8 +103,7 @@ void Settings::InitState()
     auto* state = State::GetSingleton();
 
     state->walking_toggled = walking_is_default;
-    // EnableMouseSteeringFollowMode is a master feature switch.
-    // The F6 mode itself should still start OFF until the player toggles it.
+    // Master switch only. F6 still starts off until the player turns it on.
     state->mouse_steering_follow_toggled = false;
 
     // Flag invalid to react later.

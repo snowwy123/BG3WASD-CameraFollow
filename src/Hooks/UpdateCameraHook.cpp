@@ -105,9 +105,8 @@ static void SetMouseSteeringCursorLock(State* state, bool active)
             wasActive = true;
         }
 
-        // Prevent edge-of-screen mouse limits while steering.
-        // Reset the mouse delta tracker before SetCursorPos so the synthetic
-        // recenter movement is not counted as player mouse input.
+        // Keep the cursor from hitting screen edges while steering.
+        // Reset first so the recenter move doesn't count as camera input.
         InputHook::ResetMouseMoveTracking();
         SetCursorPos(center.x, center.y);
         return;
@@ -223,10 +222,8 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
             while (*cameraAngle < -180.0f) *cameraAngle += 360.0f;
         }
 
-        // Experimental pitch test. Native Camera Tweaks identifies CameraObject + 0x164
-        // as currentPitch, so this tries applying mouse Y there while Mouse Steering
-        // Follow owns the cursor. If this has no effect, pitch needs a proper
-        // CalculateCameraPitch-style hook instead of a direct field write.
+        // Harmless pitch experiment. Direct writes here don't seem to affect BG3 much,
+        // so proper up/down steering probably needs a dedicated pitch hook later.
         if (shouldMouseSteerCamera &&
             *settings->mouse_steering_enable_pitch &&
             mouseMoveY != 0)
@@ -260,7 +257,7 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
             float desiredCameraOffset =
                 static_cast<float>(*settings->camera_follow_offset);
 
-            // W+A felt better with a wider shoulder angle during testing.
+            // W+A needs a wider shoulder angle or it feels a bit cramped.
             if (wHeld && aHeld)
             {
                 desiredCameraOffset =
@@ -354,16 +351,13 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
                 (wHeld && aHeld) || (wHeld && dHeld) || (sHeld && aHeld) || (sHeld && dHeld);
 
             // Close-range snap protection.
-            //
-            // Important:
-            // - Do NOT soften diagonal movement, because W+A / W+D need camera rotation to work.
-            // - Do NOT soften larger turns, because that makes 90/180-degree camera movement feel slow.
-            // - Only soften small close-range camera corrections.
+            // Diagonals need proper rotation and big turns should not feel sluggish,
+            // so only soften small close camera corrections.
             if (!diagonalMoveHeld && absDelta <= 55.0f)
             {
                 float nearBlend = absDelta / 55.0f;
 
-                // Smooth curve: very soft when very close, less soft near 55 degrees.
+                // Very soft near the target, less soft as it gets farther out.
                 nearBlend = nearBlend * nearBlend;
 
                 float nearStrength = 0.04f;
@@ -399,7 +393,7 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
 
             wasStraightMoveHeld = straightMoveHeld;
 
-            // Let the player look around without the camera snapping back instantly.
+            // Give manual camera input some breathing room instead of yanking back instantly.
             if (*settings->camera_follow_suspend_on_manual_camera)
             {
                 if (manualCameraInput)
@@ -434,7 +428,7 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
             }
 
 
-            // W-only/S-only can spiral because BG3WASD movement is camera-relative.
+            // Straight W/S can feed back into camera-relative movement and spin, so limit it.
             if (straightMoveHeld)
             {
                 allowFollow =
@@ -443,8 +437,7 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
                         *settings->camera_follow_straight_move_drift_ms);
             }
 
-            // Mouse Steering Follow Mode owns the camera yaw while active.
-            // This avoids fighting our yaw-bridge follow smoothing.
+            // F6 mouse steering owns yaw while active; don't stack smooth follow on top.
             if (shouldMouseSteerCamera)
             {
                 allowFollow = false;

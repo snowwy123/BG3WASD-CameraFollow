@@ -49,7 +49,7 @@ static void WriteBG3WASDNotification(const std::string& message) noexcept
     }
     catch (...)
     {
-        // Notifications are cosmetic only; never let them affect input handling.
+        // Notification bridge is nice-to-have only; input should never care if it fails.
     }
 }
 
@@ -129,8 +129,8 @@ LRESULT CALLBACK InputHook::MouseProc(int a_nCode, WPARAM a_wParam, LPARAM a_lPa
 
                 if (reset_mouse_tracking_requested.exchange(false))
                 {
-                    // SetCursorPos used by Mouse Steering Follow Mode causes a synthetic
-                    // mouse move. Treat that as the new baseline, not user input.
+                    // Recentering creates its own mouse move. Use that as the new
+                    // baseline so it doesn't turn the camera.
                     accumulated_mouse_dx.exchange(0);
                     accumulated_mouse_dy.exchange(0);
                     last_mouse_x = currentX;
@@ -342,7 +342,7 @@ void InputHook::ToggleMouseSteeringFollow(State* state)
             std::string("Mouse Steering Follow: ") +
             (state->mouse_steering_follow_toggled ? "ON" : "OFF"));
 
-        // Flush any stale mouse movement so toggling the mode on never causes a jump.
+        // Drop old mouse deltas so enabling F6 doesn't kick the camera sideways.
         ConsumeMouseMoveX();
         ConsumeMouseMoveY();
 

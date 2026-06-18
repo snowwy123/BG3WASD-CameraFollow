@@ -4,41 +4,66 @@ A mod for Baldur's Gate 3 that allows direct character movement with WASD keys (
 
 Find it on [Nexusmods](https://www.nexusmods.com/baldursgate3/mods/781).
 
-## Camera Follow Fork
+# Camera Follow Fork
 
-This is my personal fork of BG3WASD with an experimental character-follow camera system.
+This is my personal fork of BG3WASD, adding a smoother third-person camera-follow setup and an optional mouse-steering camera mode.
 
-At the moment it includes:
+It keeps the original BG3WASD movement system, but adds extra camera behaviour for people who want WASD movement to feel a bit more like a third-person game.
 
-- Character-follow camera during exploration
-- Adjustable shoulder offsets
-- Manual camera override (middle mouse / Q / E)
-- Camera follow disabled during combat
+Fork-specific changes include:
+
+- Standard Camera Follow Mode, toggled with F7
+- Mouse Steering Follow Mode, toggled with F6
+- In-game ON/OFF notifications for F6 and F7
+- Character-facing yaw bridge through Script Extender
+- Adjustable camera offsets and smoothing
+- Reduced close-range camera snapping
+- Manual camera override support
+- Camera modes disabled during combat
 - TOML configurable camera settings
-- Various camera and movement tuning options
+- Various camera and movement tuning changes
+
+Camera Modes:
+
+Standard Camera Follow Mode - follows your active character’s facing direction for smoother third-person WASD movement.
+
+Mouse Steering Follow Mode - is layered on top of Standard Camera Follow Mode. When both F7 and F6 are enabled, holding W and moving the mouse left/right steers the camera direction, giving a tighter behind-character movement feel.
+
+Known Notes:
+
+- Mouse Steering Follow Mode currently focuses on left/right steering. Vertical camera angle is not actively controlled, so set your preferred camera angle, height, and zoom before moving.
+
+- Real middle mouse input overrides Mouse Steering Follow Mode properly.
+
+- Standard Camera Follow Mode intentionally limits straight W-only/S-only follow correction to prevent camera-relative circular turning.
+
+- Diagonal movement such as W+A, W+D, S+A, and S+D generally behaves more naturally.
+Leaving F6 and F7 off gives a more original BG3WASD-style movement setup.
 
 This project is based on the original BG3WASD by Ch4nKyy.
-
-## Script Extender yaw bridge
-
-This fork also uses a small companion `.pak` mod.
-
-The `.pak` runs a Script Extender Lua script that grabs the character's facing direction and passes it over to the modified BG3WASD DLL. The DLL then uses that information to handle the camera follow behaviour.
-
-At the moment both parts are needed:
-
-- The `.pak` gets the character yaw.
-- The DLL does the camera follow stuff.
-
-It's a little bit scuffed, but it works.
 
 Original project:
 https://github.com/Ch4nKyy/BG3WASD
 
 Demo:
-https://youtu.be/zSLyIckLE-w
+https://www.youtube.com/watch?v=HPqF5g48S04
 
-Still very much a work in progress and mostly intended as a personal testbed for camera experiments.
+Still a work in progress, but now at the point where it feels like its own proper camera-control fork rather than just a tiny test tweak. It's a little bit scuffed, but it works.
+
+Script Extender Yaw Bridge:
+
+This fork uses a small companion .pak mod called BG3YawBridge.
+
+The .pak runs a Script Extender Lua script that reads the active character’s facing direction and writes it out for the modified BG3WASD DLL. The DLL then uses that yaw data for the camera-follow behaviour.
+
+It also handles the in-game toggle notifications for the fork-specific camera modes.
+
+Both parts are needed:
+
+- BG3YawBridge.pak gets the character yaw and handles toggle notifications.
+- BG3WASD.dll handles the actual camera-follow and mouse-steering behaviour.
+
+The BG3YawBridge folder in this repository contains the source files used to build BG3YawBridge.pak. The packaged .pak is included in release downloads.
 
 ## Building
 
