@@ -9,16 +9,39 @@
 #include <string>
 #include <Windows.h>
 #include <cmath>
+#include <cstdlib>
 
 void UpdateCameraHook::EnableSpecifically(uintptr_t address_incl_offset)
 {
     OriginalFunc = dku::Hook::write_call<5>(address_incl_offset, OverrideFunc);
 }
 
+static std::string GetYawBridgePath()
+{
+    char* localAppData = nullptr;
+    size_t len = 0;
+
+    if (_dupenv_s(&localAppData, &len, "LOCALAPPDATA") != 0 || localAppData == nullptr)
+    {
+        return "";
+    }
+
+    std::string path = localAppData;
+    free(localAppData);
+
+    path += "\\Larian Studios\\Baldur's Gate 3\\Script Extender\\YawBridge.txt";
+
+    return path;
+}
+
 static bool ReadYawBridge(float& yawRad, float& yawDeg, std::string& guid)
 {
-    const char* path =
-        "C:\\Users\\Cam\\AppData\\Local\\Larian Studios\\Baldur's Gate 3\\Script Extender\\YawBridge.txt";
+    const std::string path = GetYawBridgePath();
+
+    if (path.empty())
+    {
+        return false;
+    }
 
     std::ifstream file(path);
 
