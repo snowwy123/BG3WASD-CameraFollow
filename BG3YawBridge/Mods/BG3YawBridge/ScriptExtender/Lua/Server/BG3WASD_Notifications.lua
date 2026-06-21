@@ -42,6 +42,11 @@ end
 BG3WASD_LastNotificationContents = BG3WASD_LoadNotificationFile()
 
 Ext.Events.Tick:Subscribe(function()
+    -- Do not call Osiris notification functions before SessionLoaded.
+    if not BG3YawBridge_Ready then
+        return
+    end
+
     local now = Ext.Utils.MonotonicTime()
 
     if now - BG3WASD_LastNotificationPoll < 150 then
