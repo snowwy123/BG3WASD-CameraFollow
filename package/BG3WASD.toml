@@ -1,79 +1,218 @@
 [ModHotkeys]
 # For the names of all available keys, see the bottom of this config file.
-# The ModHotkeys are region DEPENDANT!!! AZERTY keyboard users must adapt them!
+# The ModHotkeys are region DEPENDANT!!! AZERTY keyboard users must adapt them.
 
 ToggleMovementMode = "key:capslock"
-# Key that toggles between Character and Camera movement mode.
+# Toggles between Character Movement mode and Camera Movement mode.
+# Camera Follow may feel wrong if this mode is active, so use this as an override/freecam-style control.
 
 HoldMovementMode = ""
-# Switch between Character and Camera movement mode while you hold this key.
+# Switch between Character Movement mode and Camera Movement mode while you hold this key.
 
 ToggleWalkspeed = "key:insert"
 # Toggles between walking and jogging movespeed.
 
 HoldWalkspeed = ""
-# When you are jogging, holding this key will make you walk.
-# If you are walking, holding this key will make you jog.
+# When jogging, holding this key makes you walk.
+# When walking, holding this key makes you jog.
 
 ReloadConfig = "key:f11"
-# This will hot reload all config values and the inputconfig.
+# Hot reloads this config and the inputconfig.
 
 ToggleAutoforward = "shift+key:w"
 # Lets you move forward without holding Forward.
-# AZERTY users should set it to shift+key:z.
+# AZERTY users should set this to shift+key:z.
+
+ToggleCameraFollow = "key:f7"
+# Toggles standard Camera Follow on/off.
+
+ToggleMouseSteering = "key:f6"
+# Toggles Mouse Steering Follow on/off.
+# Old configs using ToggleMouseSteeringFollowMode still work.
 
 
 [Core]
 
 WalkSpeed = 0.3
-# 1.0 would be jog speed. 0.5 would be 50% of that. [0.0, 1.0]
+# 1.0 is jog speed. 0.5 is 50% of jog speed. [0.0, 1.0]
 
 WalkingIsDefault = false
-# Whether the character walks, when the game starts up. [true, false]
+# Whether the character walks when the game starts. [true, false]
 
 SwitchToWalkingAfterCombat = false
-# Whether to switch to walking, when combat ends. [true, false]
+# Whether to switch to walking when combat ends. [true, false]
 
 
 [AutoToggleMovementMode]
 
 EnableAutoTogglingMovementMode = true
-# Automatically toggle movement mode depending on the context. 
-# Toggle to Camera movement, when combat starts, and back to Character movement, when combat ends.
+# Automatically toggle movement mode depending on context.
+# Toggles to Camera Movement when combat starts, and back to Character Movement when combat ends.
 # [true, false]
 
 
 [Mouselook]
 
 EnableMouselook = true
-# Hides the mouse cursor and disables Interact (usually left click) during rotation.
+# Hides the mouse cursor and disables Interact, usually left click, during rotation.
 # [true, false]
 
 EnableRotatePlusLeftclickMovesForward = true
-# Holding the Camera Rotate key and Leftclick at the same time will move Forward.
-# This feature is automatically suppressed if you bind Rotate to Leftclick.
+# Holding Camera Rotate and Left Click at the same time will move Forward.
+# This is automatically suppressed if you bind Rotate to Left Click.
 # [true, false]
 
 RotateThreshold = 200
-# This threshold is only of interest, when you bind Camera Rotate to the same key as Context Menu and Cancel Action.
-# E.g. when you want to bind Rotate to Rightclick.
-# In that case, it is the threshold in milliseconds where the mod distinguishes between Rotate and other commands.
-# [0, 2000]
+# Only relevant if Camera Rotate is bound to the same key as Context Menu / Cancel Action.
+# Example: if you bind Rotate to Right Click, this is the threshold in milliseconds
+# used to distinguish Rotate from other commands. [0, 2000]
 
 
 [InteractMoveBlocker]
 
 BlockInteractMove = false
-# During Character movement mode, block Interact (usually Leftclick) from moving your character.
+# During Character Movement mode, block Interact, usually Left Click, from moving your character.
 # Interacting with objects and people still works.
-# Even if set to false, you can still cancel interact moves by pressing your CharacterMove keys.
+# Even if false, you can still cancel interact moves by pressing CharacterMove keys.
 # [true, false]
 
 
-# List of all available keys:
+[CameraFollow]
 
-# Modifiers: ctrl, shift, alt. E.g. "ctrl+shift+key:w"
-# Multiple keycombos possible, separated by comma: "key:x,ctrl+key:y"
+EnableCameraFollow = true
+# Master switch for Camera Follow. F7 toggles the active state in-game.
+# [true, false]
+
+PauseOnManualCameraInput = true
+# Pauses Camera Follow when you manually rotate the camera, such as with middle mouse.
+# Old name still supported: SuspendFollowOnManualCamera.
+# [true, false]
+
+PauseInCombat = true
+# Disables Camera Follow during combat.
+# Old name still supported: DisableFollowInCombat.
+# [true, false]
+
+PauseDuringMovementModeOverride = true
+# Pauses Camera Follow while ToggleMovementMode / Caps Lock is in Camera Movement mode.
+# This keeps Camera Follow from fighting BG3WASD's freecam-style control.
+# [true, false]
+
+CameraTurnResponsiveness = 0.12
+# How strongly the camera turns toward the target direction.
+# Higher = snappier, lower = smoother/slower.
+# Old name still supported: CameraFollowStrength.
+
+CameraMaxTurnSpeed = 3.0
+# Maximum camera turn step per update.
+# Higher = faster possible turning, lower = gentler turning.
+# Old name still supported: CameraFollowMaxStep.
+
+TargetDirectionResponsiveness = 0.08
+# How quickly the internal target direction follows the character's facing direction.
+# Higher = less target lag, lower = smoother but more delayed.
+# Old name still supported: TargetFollowStrength.
+
+TargetDirectionMaxTurnSpeed = 2.4
+# Maximum turn step for the internal target direction.
+# Old name still supported: TargetFollowMaxStep.
+
+DefaultShoulderOffsetDegrees = -110.0
+# Main/default shoulder camera offset used by Camera Follow.
+# Old name still supported: CameraOffset.
+
+LeftTurnShoulderOffsetDegrees = -210.0
+# Stronger shoulder offset used during left/diagonal-left turning.
+# This helps the camera sit in a better place during character turning.
+# Old name still supported: LeftTurnOffset.
+
+ShoulderBlendInResponsiveness = 0.03
+# How quickly the camera blends into the turn shoulder offset.
+# Old name still supported: OffsetTransitionStrength.
+
+ShoulderBlendInMaxStep = 1.5
+# Maximum blend-in step for the shoulder offset.
+# Old name still supported: OffsetTransitionMaxStep.
+
+ShoulderBlendOutResponsiveness = 0.05
+# How quickly the camera blends back out of the turn shoulder offset.
+# Old name still supported: OffsetTransitionOutStrength.
+
+ShoulderBlendOutMaxStep = 2.0
+# Maximum blend-out step for the shoulder offset.
+# Old name still supported: OffsetTransitionOutMaxStep.
+
+CloseRangeMaxTurnSpeed = 0.5
+# Extra turn-speed limit used when the camera is already very close to the target.
+# Helps reduce tiny close-range snaps.
+# Old name still supported: NearSnapMaxStep.
+
+StraightMovementFollowWindowMs = 50
+# How long straight W/S movement is allowed to keep applying camera follow correction.
+# Setting this too low can make straight forward/back camera follow feel disabled.
+# Old name still supported: StraightMoveDriftMs.
+
+
+[CameraFollowMovementBias]
+# Movement bias values adjust how strongly diagonal movement influences the camera target.
+# These are advanced tuning values. Defaults are recommended unless testing camera feel.
+
+ForwardLeftTurnBias = 0.5
+# Old name still supported: WA_Multiplier.
+
+ForwardRightTurnBias = 0.75
+# Old name still supported: WD_Multiplier.
+
+BackwardLeftTurnBias = 0.5
+# Old name still supported: SA_Multiplier.
+
+BackwardRightTurnBias = 0.5
+# Old name still supported: SD_Multiplier.
+
+
+[MouseSteering]
+
+EnableMouseSteering = true
+# Master switch for Mouse Steering Follow. F6 toggles the active state in-game.
+# Old name still supported: EnableMouseSteeringFollowMode in [CameraFollow].
+# [true, false]
+
+MouseYawSensitivity = 0.12
+# Horizontal mouse steering sensitivity.
+# Old name still supported: MouseSteeringSensitivity in [CameraFollow].
+
+MouseSteeringForwardOnly = true
+# If true, Mouse Steering only applies while moving forward.
+# Old name still supported in [CameraFollow].
+# [true, false]
+
+LockCursorWhileMouseSteering = true
+# Locks/recenters the cursor while Mouse Steering is active.
+# Old name still supported: MouseSteeringLockCursor in [CameraFollow].
+# [true, false]
+
+EnableMousePitch = true
+# Experimental/future setting. Vertical pitch is not fully reliable yet.
+# Old name still supported: MouseSteeringEnablePitch in [CameraFollow].
+# [true, false]
+
+MousePitchSensitivity = -0.05
+# Experimental/future setting for vertical pitch sensitivity.
+# Old name still supported: MouseSteeringPitchSensitivity in [CameraFollow].
+
+MousePitchMinDegrees = -85.0
+# Experimental/future setting for minimum pitch.
+# Old name still supported: MouseSteeringPitchMin in [CameraFollow].
+
+MousePitchMaxDegrees = 85.0
+# Experimental/future setting for maximum pitch.
+# Old name still supported: MouseSteeringPitchMax in [CameraFollow].
+
+
+# List of available keys:
+
+# Modifiers: ctrl, shift, alt. Example: "ctrl+shift+key:w"
+# Multiple key combos can be separated by commas: "key:x,ctrl+key:y"
 
 # mouse:left            mouse:right             mouse:middle
 # mouse:x1              mouse:x2
@@ -91,17 +230,16 @@ BlockInteractMove = false
 # key:lalt              key:ralt
 # key:lshift            key:rshift
 # key:lctrl             key:rctrl
-# key:lgui              key:rgui (Windows keys)                
+# key:lgui              key:rgui (Windows keys)
 
 # key:;                 key:=                   key:,                   key:'
 # key:-                 key:.                   key:/                   key:`
 # key:[                 key:]
-# key:\\ (Backslash is a very special character in the toml format. You must either
-# write xxx="key:\\" or xxx='key:\' for it to work.)
+# key:\\ (Backslash is special in TOML. Use either "key:\\" or 'key:\'.)
 
 # key:kp_0              key:kp_1                ...                     key:kp_9
 # key:kp_multiply       key:kp_plus             key:kp_period           key:kp_divide
-# key:kp_minus            
+# key:kp_minus
 
 # key:modechange        key:prior               key:clear               key:select
 # key:execute           key:help                key:sleep
