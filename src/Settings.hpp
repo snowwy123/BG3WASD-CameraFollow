@@ -12,7 +12,7 @@ public:
     String hold_movement_mode{ "HoldMovementMode", "ModHotkeys" };
     String toggle_autoforward{ "ToggleAutoforward", "ModHotkeys" };
     String toggle_camera_follow{ "ToggleCameraFollow", "ModHotkeys" };
-    String toggle_mouse_steering_follow{ "ToggleMouseSteeringFollowMode", "ModHotkeys" };
+    String toggle_mouse_steering_follow{ "ToggleMouseSteering", "ModHotkeys" };
     String hold_walkspeed{ "HoldWalkspeed", "ModHotkeys" };
     String reload_config{ "ReloadConfig", "ModHotkeys" };
 
@@ -35,69 +35,76 @@ public:
     Boolean block_interact_move{ "BlockInteractMove", "InteractMoveBlocker" };
 
     Boolean enable_camera_follow{ "EnableCameraFollow", "CameraFollow" };
-    Boolean enable_mouse_steering_follow{ "EnableMouseSteeringFollowMode", "CameraFollow" };
+    Boolean enable_mouse_steering_follow{ "EnableMouseSteering", "MouseSteering" };
 
-    Double mouse_steering_sensitivity{ "MouseSteeringSensitivity", "CameraFollow" };
+    Double mouse_steering_sensitivity{ "MouseYawSensitivity", "MouseSteering" };
 
-    Boolean mouse_steering_enable_pitch{ "MouseSteeringEnablePitch", "CameraFollow" };
-    Double mouse_steering_pitch_sensitivity{ "MouseSteeringPitchSensitivity", "CameraFollow" };
-    Double mouse_steering_pitch_min{ "MouseSteeringPitchMin", "CameraFollow" };
-    Double mouse_steering_pitch_max{ "MouseSteeringPitchMax", "CameraFollow" };
+    // Pitch settings are kept here for config compatibility / future work.
+    // The current camera hook does not yet provide reliable vertical pitch control.
+    Boolean mouse_steering_enable_pitch{ "EnableMousePitch", "MouseSteering" };
+    Double mouse_steering_pitch_sensitivity{ "MousePitchSensitivity", "MouseSteering" };
+    Double mouse_steering_pitch_min{ "MousePitchMinDegrees", "MouseSteering" };
+    Double mouse_steering_pitch_max{ "MousePitchMaxDegrees", "MouseSteering" };
 
-    Boolean mouse_steering_forward_only{ "MouseSteeringForwardOnly", "CameraFollow" };
+    Boolean mouse_steering_forward_only{ "MouseSteeringForwardOnly", "MouseSteering" };
 
-    Boolean mouse_steering_lock_cursor{ "MouseSteeringLockCursor", "CameraFollow" };
+    Boolean mouse_steering_lock_cursor{ "LockCursorWhileMouseSteering", "MouseSteering" };
 
     Boolean camera_follow_suspend_on_manual_camera{
-        "SuspendFollowOnManualCamera",
+        "PauseOnManualCameraInput",
         "CameraFollow"
     };
 
     Boolean camera_follow_disable_in_combat{
-        "DisableFollowInCombat",
+        "PauseInCombat",
         "CameraFollow"
     };
 
-    Double camera_follow_offset{ "CameraOffset", "CameraFollow" };
-    Double camera_follow_left_turn_offset{ "LeftTurnOffset", "CameraFollow" };
+    Boolean camera_follow_pause_during_movement_mode_override{
+        "PauseDuringMovementModeOverride",
+        "CameraFollow"
+    };
+
+    Double camera_follow_offset{ "DefaultShoulderOffsetDegrees", "CameraFollow" };
+    Double camera_follow_left_turn_offset{ "LeftTurnShoulderOffsetDegrees", "CameraFollow" };
 
     Double camera_follow_offset_transition_strength{
-        "OffsetTransitionStrength",
+        "ShoulderBlendInResponsiveness",
         "CameraFollow"
     };
 
     Double camera_follow_offset_transition_max_step{
-        "OffsetTransitionMaxStep",
+        "ShoulderBlendInMaxStep",
         "CameraFollow"
     };
 
     Double camera_follow_offset_transition_out_strength{
-        "OffsetTransitionOutStrength",
+        "ShoulderBlendOutResponsiveness",
         "CameraFollow"
     };
 
     Double camera_follow_offset_transition_out_max_step{
-        "OffsetTransitionOutMaxStep",
+        "ShoulderBlendOutMaxStep",
         "CameraFollow"
     };
 
-    Double camera_follow_target_strength{ "TargetFollowStrength", "CameraFollow" };
-    Double camera_follow_target_max_step{ "TargetFollowMaxStep", "CameraFollow" };
+    Double camera_follow_target_strength{ "TargetDirectionResponsiveness", "CameraFollow" };
+    Double camera_follow_target_max_step{ "TargetDirectionMaxTurnSpeed", "CameraFollow" };
 
-    Double camera_follow_strength{ "CameraFollowStrength", "CameraFollow" };
-    Double camera_follow_max_step{ "CameraFollowMaxStep", "CameraFollow" };
+    Double camera_follow_strength{ "CameraTurnResponsiveness", "CameraFollow" };
+    Double camera_follow_max_step{ "CameraMaxTurnSpeed", "CameraFollow" };
 
-    Double camera_follow_near_snap_max_step{ "NearSnapMaxStep", "CameraFollow" };
+    Double camera_follow_near_snap_max_step{ "CloseRangeMaxTurnSpeed", "CameraFollow" };
 
     Integer camera_follow_straight_move_drift_ms{
-        "StraightMoveDriftMs",
+        "StraightMovementFollowWindowMs",
         "CameraFollow"
     };
 
-    Double camera_follow_wa_multiplier{ "WA_Multiplier", "CameraFollow" };
-    Double camera_follow_wd_multiplier{ "WD_Multiplier", "CameraFollow" };
-    Double camera_follow_sa_multiplier{ "SA_Multiplier", "CameraFollow" };
-    Double camera_follow_sd_multiplier{ "SD_Multiplier", "CameraFollow" };
+    Double camera_follow_wa_multiplier{ "ForwardLeftTurnBias", "CameraFollowMovementBias" };
+    Double camera_follow_wd_multiplier{ "ForwardRightTurnBias", "CameraFollowMovementBias" };
+    Double camera_follow_sa_multiplier{ "BackwardLeftTurnBias", "CameraFollowMovementBias" };
+    Double camera_follow_sd_multiplier{ "BackwardRightTurnBias", "CameraFollowMovementBias" };
 
     void Load() noexcept;
     std::vector<std::string> GetBoundKeycombos(std::string setting);
@@ -107,4 +114,5 @@ private:
     bool first_time_loaded = true;
 
     void InitState();
+    void ApplyLegacyConfigFallbacks();
 };

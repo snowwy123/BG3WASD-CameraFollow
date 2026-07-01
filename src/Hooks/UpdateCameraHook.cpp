@@ -194,19 +194,33 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
     const bool movementInput = wHeld || aHeld || sHeld || dHeld;
     const bool manualCameraInput = qHeld || eHeld || middleMouseHeld;
 
+    const bool characterMovementMode = state->IsCharacterMovementMode();
+    const bool cameraFollowBlockedByMovementMode =
+        *settings->camera_follow_pause_during_movement_mode_override &&
+        !characterMovementMode;
+
     const bool mouseSteeringInput =
         *settings->mouse_steering_forward_only
             ? (wHeld || (wHeld && aHeld) || (wHeld && dHeld))
             : movementInput;
 
-    const bool shouldMouseSteerCamera =
+    const bool cameraFollowActive =
         camera_object_ptr &&
         *settings->enable_camera_follow &&
-        *settings->enable_mouse_steering_follow &&
         state->camera_follow_toggled &&
+        !cameraFollowBlockedByMovementMode &&
+        !cameraFollowBlockedByCombat;
+
+    const bool mouseSteeringActive =
+        camera_object_ptr &&
+        *settings->enable_mouse_steering_follow &&
         state->mouse_steering_follow_toggled &&
-        state->IsCharacterMovementMode() &&
-        !cameraFollowBlockedByCombat &&
+        characterMovementMode &&
+        !cameraFollowBlockedByMovementMode &&
+        !cameraFollowBlockedByCombat;
+
+    const bool shouldMouseSteerCamera =
+        mouseSteeringActive &&
         mouseSteeringInput &&
         !middleMouseHeld;
 
@@ -227,10 +241,7 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
         SetMouseSteeringCursorLock(state, false);
     }
 
-    if (camera_object_ptr &&
-        *settings->enable_camera_follow &&
-        state->camera_follow_toggled &&
-        !cameraFollowBlockedByCombat)
+    if (cameraFollowActive || shouldMouseSteerCamera)
     {
         float* cameraAngle = reinterpret_cast<float*>(camera_object_ptr + 0xAC);
         float* cameraPitch = reinterpret_cast<float*>(camera_object_ptr + 0x164);
@@ -267,14 +278,16 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
             *cameraPitch = pitch;
         }
 
-        float yawRad = 0.0f;
-        float yawDeg = 0.0f;
-        std::string guid;
-
-        const bool yawRead = ReadYawBridge(yawRad, yawDeg, guid);
-
-        if (yawRead)
+        if (cameraFollowActive)
         {
+            float yawRad = 0.0f;
+            float yawDeg = 0.0f;
+            std::string guid;
+
+            const bool yawRead = ReadYawBridge(yawRad, yawDeg, guid);
+
+            if (yawRead)
+            {
             const uint32_t nowMoveTime = SDL_GetTicks();
 
             float desiredCameraOffset =
@@ -490,6 +503,7 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
             if (allowFollow)
             {
                 *cameraAngle += step;
+            }
             }
         }
     }
