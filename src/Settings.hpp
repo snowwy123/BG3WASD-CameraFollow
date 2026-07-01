@@ -42,6 +42,15 @@ public:
     // Pitch settings are kept here for config compatibility / future work.
     // The current camera hook does not yet provide reliable vertical pitch control.
     Boolean mouse_steering_enable_pitch{ "EnableMousePitch", "MouseSteering" };
+
+    // Uses BG3's normal camera-rotate input while F6 Mouse Steering is active.
+    // This allows vertical camera movement/pitch like holding middle mouse while moving.
+    // Disable this to use the original direct-yaw-only mouse steering mode.
+    Boolean mouse_steering_allow_vertical_camera{
+        "AllowVerticalMouseSteering",
+        "MouseSteering"
+    };
+
     Double mouse_steering_pitch_sensitivity{ "MousePitchSensitivity", "MouseSteering" };
     Double mouse_steering_pitch_min{ "MousePitchMinDegrees", "MouseSteering" };
     Double mouse_steering_pitch_max{ "MousePitchMaxDegrees", "MouseSteering" };
