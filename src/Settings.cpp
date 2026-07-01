@@ -249,7 +249,7 @@ void Settings::Load() noexcept
     }
     else
     {
-        // During first load, this is called in AfterInitialLoadInputConfigHook.
+        // On first load this is handled by AfterInitialLoadInputConfigHook.
         InputconfigPatcher::Patch();
     }
 
@@ -264,10 +264,10 @@ void Settings::InitState()
     auto* state = State::GetSingleton();
 
     state->walking_toggled = walking_is_default;
-    // Master switch only. F6 still starts off until the player turns it on.
+    // This is the master switch. F6 still starts off until the player enables it.
     state->mouse_steering_follow_toggled = false;
 
-    // Flag invalid to react later.
+    // Mark this as invalid until we have a real cursor position.
     state->cursor_position_to_restore.x = -1;
 }
 

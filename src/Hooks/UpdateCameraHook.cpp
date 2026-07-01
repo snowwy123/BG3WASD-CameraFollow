@@ -109,9 +109,8 @@ static void SetMouseSteeringGameRotate(State* state, bool active)
         return;
     }
 
-    // Use BG3's own CameraToggleMouseRotate command for the optional
-    // vertical mouse-steering mode. This mimics holding middle mouse while
-    // moving, so the game handles both yaw and pitch normally.
+    // Vertical mouse steering uses BG3's normal camera-rotate input.
+    // It should feel like holding middle mouse while moving.
     state->SetIsRotating(active);
     InputHook::ResetMouseMoveTracking();
     wasActive = active;
@@ -146,8 +145,8 @@ static void SetMouseSteeringCursorLock(State* state, bool active)
             wasActive = true;
         }
 
-        // Keep the cursor from hitting screen edges while steering.
-        // Reset first so the recenter move doesn't count as camera input.
+        // Keep the cursor near the middle so direct mouse steering
+        // does not run into the edge of the screen.
         InputHook::ResetMouseMoveTracking();
         SetCursorPos(center.x, center.y);
         return;
@@ -286,8 +285,7 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
             while (*cameraAngle < -180.0f) *cameraAngle += 360.0f;
         }
 
-        // Legacy direct-pitch experiment. In the default vertical mode, BG3's
-        // own CameraToggleMouseRotate input handles pitch instead.
+        // Old direct-pitch path. The default vertical mode lets BG3 handle pitch.
         if (useDirectMouseSteering &&
             *settings->mouse_steering_enable_pitch &&
             mouseMoveY != 0)
@@ -323,7 +321,7 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
             float desiredCameraOffset =
                 static_cast<float>(*settings->camera_follow_offset);
 
-            // W+A needs a wider shoulder angle or it feels a bit cramped.
+            // W+A feels better with a wider over-the-shoulder angle.
             if (wHeld && aHeld)
             {
                 desiredCameraOffset =
@@ -356,12 +354,24 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
                     ? static_cast<float>(*settings->camera_follow_offset_transition_out_max_step)
                     : static_cast<float>(*settings->camera_follow_offset_transition_max_step);
 
-            float offsetMove = offsetDelta * offsetStrength;
+            const float offsetSnapDegrees = 0.05f;
 
-            if (offsetMove > offsetMaxStep) offsetMove = offsetMaxStep;
-            if (offsetMove < -offsetMaxStep) offsetMove = -offsetMaxStep;
+            if (std::abs(offsetDelta) <= offsetSnapDegrees)
+            {
+                smoothedCameraOffset = desiredCameraOffset;
+            }
+            else
+            {
+                float offsetMove = offsetDelta * offsetStrength;
 
-            smoothedCameraOffset += offsetMove;
+                if (offsetMove > offsetMaxStep) offsetMove = offsetMaxStep;
+                if (offsetMove < -offsetMaxStep) offsetMove = -offsetMaxStep;
+
+                // Do not step past the requested shoulder offset.
+                if (std::abs(offsetMove) > std::abs(offsetDelta)) offsetMove = offsetDelta;
+
+                smoothedCameraOffset += offsetMove;
+            }
 
             float rawTargetYaw = yawDeg + smoothedCameraOffset;
 
@@ -395,7 +405,20 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
             if (targetMove > targetMaxStep) targetMove = targetMaxStep;
             if (targetMove < -targetMaxStep) targetMove = -targetMaxStep;
 
-            virtualTargetYaw += targetMove;
+            // Snap the last tiny yaw difference instead of easing forever.
+            const float targetSnapDegrees = 0.05f;
+
+            if (std::abs(targetDelta) <= targetSnapDegrees)
+            {
+                virtualTargetYaw = rawTargetYaw;
+            }
+            else
+            {
+                // Do not let aggressive settings step past the target.
+                if (std::abs(targetMove) > std::abs(targetDelta)) targetMove = targetDelta;
+
+                virtualTargetYaw += targetMove;
+            }
 
             while (virtualTargetYaw > 180.0f) virtualTargetYaw -= 360.0f;
             while (virtualTargetYaw < -180.0f) virtualTargetYaw += 360.0f;
@@ -416,14 +439,12 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
             const bool diagonalMoveHeld =
                 (wHeld && aHeld) || (wHeld && dHeld) || (sHeld && aHeld) || (sHeld && dHeld);
 
-            // Close-range snap protection.
-            // Diagonals need proper rotation and big turns should not feel sluggish,
-            // so only soften small close camera corrections.
+            // Soften small close-range corrections, but keep diagonals responsive.
             if (!diagonalMoveHeld && absDelta <= 55.0f)
             {
                 float nearBlend = absDelta / 55.0f;
 
-                // Very soft near the target, less soft as it gets farther out.
+                // Softer near the target, stronger as the gap grows.
                 nearBlend = nearBlend * nearBlend;
 
                 float nearStrength = 0.04f;
@@ -459,7 +480,7 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
 
             wasStraightMoveHeld = straightMoveHeld;
 
-            // Give manual camera input some breathing room instead of yanking back instantly.
+            // Let manual camera input win until the player starts moving again.
             if (*settings->camera_follow_suspend_on_manual_camera)
             {
                 if (manualCameraInput)
@@ -468,9 +489,8 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
                 }
                 else if (movementInput)
                 {
-                    // Movement resumes character-facing camera follow after a manual camera adjustment.
-                    // Idle frames deliberately keep the suspension, so standing still does not yank
-                    // the camera back to character facing after Q/E or middle-mouse rotation.
+                    // Moving again resumes character-facing follow.
+                    // Standing still keeps the manually chosen camera angle.
                     followSuspendedByManualCamera = false;
                 }
             }
@@ -496,7 +516,7 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
             }
 
 
-            // Straight W/S can feed back into camera-relative movement and spin, so limit it.
+            // Straight W/S can feed back into camera-relative movement, so keep it brief.
             if (straightMoveHeld)
             {
                 allowFollow =
@@ -505,7 +525,7 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
                         *settings->camera_follow_straight_move_drift_ms);
             }
 
-            // F6 mouse steering owns yaw while active; don't stack smooth follow on top.
+            // F6 owns the camera while steering, so do not stack follow on top.
             if (shouldMouseSteerCamera)
             {
                 allowFollow = false;
@@ -534,7 +554,26 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
 
             if (allowFollow)
             {
-                *cameraAngle += step;
+                // Bias is applied after the base clamp, so clamp once more
+                // to avoid a tiny one-frame bounce near the end.
+                if (std::abs(step) > absDelta)
+                {
+                    step = delta;
+                }
+
+                const float cameraSnapDegrees = 0.20f;
+
+                if (absDelta <= cameraSnapDegrees)
+                {
+                    *cameraAngle = virtualTargetYaw;
+                }
+                else
+                {
+                    *cameraAngle += step;
+                }
+
+                while (*cameraAngle > 180.0f) *cameraAngle -= 360.0f;
+                while (*cameraAngle < -180.0f) *cameraAngle += 360.0f;
             }
             }
         }

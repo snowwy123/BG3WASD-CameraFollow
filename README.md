@@ -1,69 +1,89 @@
-# BG3 WASD Movement
+# BG3 WASD Camera Follow Fork
 
-A mod for Baldur's Gate 3 that allows direct character movement with WASD keys (or others).
+A Baldur's Gate 3 mod based on [BG3WASD by Ch4nKyy](https://github.com/Ch4nKyy/BG3WASD).
 
-Find it on [Nexusmods](https://www.nexusmods.com/baldursgate3/mods/781).
+This fork keeps the original WASD movement idea, then adds smoother third-person camera behaviour for players who want movement to feel closer to a modern over-the-shoulder RPG.
 
-# Camera Follow Fork
+Version: **1.2.0**
 
-This is my personal fork of BG3WASD, adding a smoother third-person camera-follow setup and an optional mouse-steering camera mode.
+## What this fork adds
 
-It keeps the original BG3WASD movement system, but adds extra camera behaviour for people who want WASD movement to feel a bit more like a third-person game.
+- **Camera Follow** mode, toggled with **F7**
+- **Mouse Steering** mode, toggled with **F6**
+- Optional vertical mouse steering that behaves like holding middle mouse while moving
+- In-game ON/OFF notifications for the F6 and F7 camera modes
+- Script Extender yaw bridge for reading the active character's facing direction
+- Smooth camera-follow behaviour with configurable responsiveness and turn speed
+- Over-the-shoulder offset tuning for W+A / W+D movement
+- Manual camera override support, so Q/E and middle mouse can take control cleanly
+- Caps/freecam movement-mode override support
+- Combat pause support for the fork's camera modes
+- TOML config cleanup with old setting-name fallbacks
 
-Fork-specific changes include:
+## Camera modes
 
-- Standard Camera Follow Mode, toggled with F7
-- Mouse Steering Follow Mode, toggled with F6
-- In-game ON/OFF notifications for F6 and F7
-- Character-facing yaw bridge through Script Extender
-- Adjustable camera offsets and smoothing
-- Reduced close-range camera snapping
-- Manual camera override support
-- Camera modes disabled during combat
-- TOML configurable camera settings
-- Various camera and movement tuning changes
+### F7: Camera Follow
 
-Camera Modes:
+Camera Follow turns the camera toward the active character's facing direction while moving.
 
-Standard Camera Follow Mode - follows your active character’s facing direction for smoother third-person WASD movement.
+It is designed to make WASD movement feel more natural without constantly snapping the camera back to the character.
 
-Mouse Steering Follow Mode - is layered on top of Standard Camera Follow Mode. When both F7 and F6 are enabled, holding W and moving the mouse left/right steers the camera direction, giving a tighter behind-character movement feel.
+### F6: Mouse Steering
 
-Known Notes:
+Mouse Steering is separate from Camera Follow. It does not require F7 to be on.
 
-- Mouse Steering Follow Mode currently focuses on left/right steering. Vertical camera angle is not actively controlled, so set your preferred camera angle, height, and zoom before moving.
+By default, Mouse Steering uses BG3's own camera-rotate input while you move. This makes it feel similar to holding middle mouse while moving, including vertical camera movement.
 
-- Real middle mouse input overrides Mouse Steering Follow Mode properly.
+The old yaw-only steering style is still available in the TOML:
 
-- Standard Camera Follow Mode intentionally limits straight W-only/S-only follow correction to prevent camera-relative circular turning.
+```toml
+[MouseSteering]
+AllowVerticalMouseSteering = false
+```
 
-- Diagonal movement such as W+A, W+D, S+A, and S+D generally behaves more naturally.
-Leaving F6 and F7 off gives a more original BG3WASD-style movement setup.
+## Default hotkeys
 
-This project is based on the original BG3WASD by Ch4nKyy.
+```text
+F7 = Toggle Camera Follow
+F6 = Toggle Mouse Steering
+```
 
-Original project:
-https://github.com/Ch4nKyy/BG3WASD
+## Important notes
 
-Demo:
-https://www.youtube.com/watch?v=HPqF5g48S04
+- The fork-specific camera modes are intended for exploration movement.
+- Camera Follow and Mouse Steering pause during combat when `PauseInCombat = true`.
+- Manual camera input with Q/E or middle mouse temporarily takes priority over Camera Follow.
+- Standing still after manual camera movement keeps the camera where you placed it.
+- Starting movement again resumes character-facing Camera Follow.
+- Caps/freecam movement mode pauses Camera Follow so the systems do not fight each other.
+- Leaving both F6 and F7 off gives a more original BG3WASD-style setup.
 
-Still a work in progress, but now at the point where it feels like its own proper camera-control fork rather than just a tiny test tweak. It's a little bit scuffed, but it works.
+## Script Extender yaw bridge
 
-Script Extender Yaw Bridge:
+This fork uses a small companion `.pak` mod called **BG3YawBridge**.
 
-This fork uses a small companion .pak mod called BG3YawBridge.
+The `.pak` runs a Script Extender Lua script that reads the active character's facing direction and writes it to:
 
-The .pak runs a Script Extender Lua script that reads the active character’s facing direction and writes it out for the modified BG3WASD DLL. The DLL then uses that yaw data for the camera-follow behaviour.
+```text
+%LOCALAPPDATA%\Larian Studios\Baldur's Gate 3\Script Extender\YawBridge.txt
+```
 
-It also handles the in-game toggle notifications for the fork-specific camera modes.
+The modified `BG3WASD.dll` reads that file and uses the yaw value for Camera Follow.
 
 Both parts are needed:
 
-- BG3YawBridge.pak gets the character yaw and handles toggle notifications.
-- BG3WASD.dll handles the actual camera-follow and mouse-steering behaviour.
+- `BG3YawBridge.pak` reads the active character yaw and handles toggle notifications.
+- `BG3WASD.dll` handles movement, Camera Follow, and Mouse Steering.
 
-The BG3YawBridge folder in this repository contains the source files used to build BG3YawBridge.pak. The packaged .pak is included in release downloads.
+## Version 1.2.0 highlights
+
+- Cleaned up Camera Follow config names while keeping fallbacks for older TOML settings.
+- Added independent F6 Mouse Steering toggle behaviour.
+- Added Caps/freecam movement-mode override support.
+- Improved manual camera override behaviour while moving and standing still.
+- Added vertical Mouse Steering mode, enabled by default.
+- Added settle polish to reduce tiny final camera offsets and one-frame bounce corrections.
+- Slightly slowed the shoulder transition so W+A / W+D changes feel smoother.
 
 ## Building
 
@@ -73,45 +93,54 @@ The BG3YawBridge folder in this repository contains the source files used to bui
   - Add this to your `PATH`
 - [PowerShell](https://github.com/PowerShell/PowerShell/releases/latest)
 - [Vcpkg](https://github.com/microsoft/vcpkg)
-  - Add the environment variable `VCPKG_ROOT` with the value as the path to the folder containing
-  vcpkg
+  - Set the `VCPKG_ROOT` environment variable to your vcpkg folder
 - [Visual Studio Community 2022](https://visualstudio.microsoft.com/)
-  - Desktop development with C++
+  - Install **Desktop development with C++**
 - [Baldur's Gate 3 Steam Distribution](https://store.steampowered.com/app/1086940/Baldurs_Gate_3/)
-  - Add the environment variable `BG3PATH` with the value as path to game install folder
-  - Add `BG3PATH2` if you have a secondary installation (E.g. one for Steam, one for GOG)
-- [7zip](https://www.7-zip.org/)
-  - Install to default dir
-  
-### Register Visual Studio as a Generator
+  - Set `BG3PATH` to your BG3 install folder
+  - Add `BG3PATH2` if you have a second install, for example Steam and GOG
+- [7-Zip](https://www.7-zip.org/)
+  - Install to the default directory
 
-- Open `x64 Native Tools Command Prompt`
-- Run `cmake`
-- Close the cmd window
+### Recommended local build
 
-### Building
+This fork is currently built with Visual Studio 2022 and the static-md vcpkg triplet:
 
+```powershell
+cmake -S . -B build `
+  -G "Visual Studio 17 2022" `
+  -A x64 `
+  -DVCPKG_TARGET_TRIPLET=x64-windows-static-md
+
+cmake --build build --config Release
 ```
-git clone https://github.com/Ch4nKyy/BG3WASD.git
-cd BG3WASD
-git submodule init
-git submodule update --remote
+
+After that, normal source edits only need:
+
+```powershell
+cmake --build build --config Release
+```
+
+### Original helper scripts
+
+The original helper scripts are still included:
+
+```powershell
 .\build-release.ps1
 ```
 
-### Solution Generation (Optional)
-If you want to generate a Visual Studio solution, run the following command:
-```
+Optional Visual Studio solution generation:
+
+```powershell
 .\generate-sln.ps1
 ```
 
-> ***Note:*** *This will generate a `BG3WASD.sln` file in the **build** directory.*
+## Credits
 
-### VSCode Intellisense (Optional)
+This project is based on the original **BG3WASD** by Ch4nKyy.
 
-To fix Intellisense in VSCode, do the following:
+Original project:
+https://github.com/Ch4nKyy/BG3WASD
 
-- Install the extensions ```ms-vscode.cpptools``` and ```ms-vscode.cmake-tools```.
-- Build the solution with the cmake tools extension.
-- In your ```c_cpp_properties.json```, use ```"configurationProvider": "ms-vscode.cmake-tools"```.
-This is the only needed parameter, apart from "name".
+Original Nexus page:
+https://www.nexusmods.com/baldursgate3/mods/781
