@@ -436,9 +436,11 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
                 {
                     followSuspendedByManualCamera = true;
                 }
-
-                if (movementInput)
+                else if (movementInput)
                 {
+                    // Movement resumes character-facing camera follow after a manual camera adjustment.
+                    // Idle frames deliberately keep the suspension, so standing still does not yank
+                    // the camera back to character facing after Q/E or middle-mouse rotation.
                     followSuspendedByManualCamera = false;
                 }
             }

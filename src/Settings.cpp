@@ -208,11 +208,11 @@ void Settings::Load() noexcept
         config.Bind(camera_follow_offset, -110.0);
         config.Bind(camera_follow_left_turn_offset, -210.0);
 
-        config.Bind(camera_follow_offset_transition_strength, 0.03);
-        config.Bind(camera_follow_offset_transition_max_step, 1.5);
+        config.Bind(camera_follow_offset_transition_strength, 0.025);
+        config.Bind(camera_follow_offset_transition_max_step, 1.25);
 
-        config.Bind(camera_follow_offset_transition_out_strength, 0.05);
-        config.Bind(camera_follow_offset_transition_out_max_step, 2.0);
+        config.Bind(camera_follow_offset_transition_out_strength, 0.04);
+        config.Bind(camera_follow_offset_transition_out_max_step, 1.5);
 
         config.Bind(camera_follow_target_strength, 0.08);
         config.Bind(camera_follow_target_max_step, 2.4);
