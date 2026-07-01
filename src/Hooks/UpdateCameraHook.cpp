@@ -99,6 +99,24 @@ static bool TryGetForegroundGameWindowCenter(POINT& center)
     return ClientToScreen(hwnd, &center) != 0;
 }
 
+
+static void SetMouseSteeringGameRotate(State* state, bool active)
+{
+    static bool wasActive = false;
+
+    if (active == wasActive)
+    {
+        return;
+    }
+
+    // Use BG3's own CameraToggleMouseRotate command for the optional
+    // vertical mouse-steering mode. This mimics holding middle mouse while
+    // moving, so the game handles both yaw and pitch normally.
+    state->SetIsRotating(active);
+    InputHook::ResetMouseMoveTracking();
+    wasActive = active;
+}
+
 static void SetMouseSteeringCursorLock(State* state, bool active)
 {
     static bool wasActive = false;
@@ -160,6 +178,7 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
     {
         InputHook::ConsumeMouseMoveX();
         InputHook::ConsumeMouseMoveY();
+        SetMouseSteeringGameRotate(state, false);
         SetMouseSteeringCursorLock(state, false);
         return OriginalFunc(a1, a2, a3, a4);
     }
@@ -224,17 +243,28 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
         mouseSteeringInput &&
         !middleMouseHeld;
 
-    const int mouseMoveX = shouldMouseSteerCamera
+    const bool useGameRotateMouseSteering =
+        shouldMouseSteerCamera &&
+        *settings->mouse_steering_allow_vertical_camera &&
+        !state->rotate_keys.empty();
+
+    const bool useDirectMouseSteering =
+        shouldMouseSteerCamera &&
+        !useGameRotateMouseSteering;
+
+    SetMouseSteeringGameRotate(state, useGameRotateMouseSteering);
+
+    const int mouseMoveX = useDirectMouseSteering
         ? InputHook::ConsumeMouseMoveX()
         : (InputHook::ConsumeMouseMoveX(), 0);
 
-    const int mouseMoveY = shouldMouseSteerCamera
+    const int mouseMoveY = useDirectMouseSteering
         ? InputHook::ConsumeMouseMoveY()
         : (InputHook::ConsumeMouseMoveY(), 0);
 
-    if (*settings->mouse_steering_lock_cursor)
+    if (*settings->mouse_steering_lock_cursor && useDirectMouseSteering)
     {
-        SetMouseSteeringCursorLock(state, shouldMouseSteerCamera);
+        SetMouseSteeringCursorLock(state, true);
     }
     else
     {
@@ -246,7 +276,7 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
         float* cameraAngle = reinterpret_cast<float*>(camera_object_ptr + 0xAC);
         float* cameraPitch = reinterpret_cast<float*>(camera_object_ptr + 0x164);
 
-        if (shouldMouseSteerCamera && mouseMoveX != 0)
+        if (useDirectMouseSteering && mouseMoveX != 0)
         {
             *cameraAngle +=
                 static_cast<float>(mouseMoveX) *
@@ -256,9 +286,9 @@ int64_t UpdateCameraHook::OverrideFunc(uint64_t a1, uint64_t a2, uint64_t a3, in
             while (*cameraAngle < -180.0f) *cameraAngle += 360.0f;
         }
 
-        // Harmless pitch experiment. Direct writes here don't seem to affect BG3 much,
-        // so proper up/down steering probably needs a dedicated pitch hook later.
-        if (shouldMouseSteerCamera &&
+        // Legacy direct-pitch experiment. In the default vertical mode, BG3's
+        // own CameraToggleMouseRotate input handles pitch instead.
+        if (useDirectMouseSteering &&
             *settings->mouse_steering_enable_pitch &&
             mouseMoveY != 0)
         {

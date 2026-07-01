@@ -195,6 +195,7 @@ void Settings::Load() noexcept
 
         config.Bind(mouse_steering_sensitivity, 0.12);
         config.Bind(mouse_steering_enable_pitch, TRUE);
+        config.Bind(mouse_steering_allow_vertical_camera, TRUE);
         config.Bind(mouse_steering_pitch_sensitivity, -0.05);
         config.Bind(mouse_steering_pitch_min, -85.0);
         config.Bind(mouse_steering_pitch_max, 85.0);
